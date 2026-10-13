@@ -164,7 +164,8 @@ function render(room){
     wb.innerHTML = `<div class="winner"><h2>🏆 ¡Ganador!</h2>
       <div class="name" style="font-weight:700;font-size:1.1rem">${esc(w.name)}</div>
       ${w.address ? `<div class="hint">📍 ${esc(w.address)}</div>` : ''}
-      <div class="hint">${w.votes} ${w.votes === 1 ? 'voto' : 'votos'}</div></div>`;
+      <div class="hint">${w.votes} ${w.votes === 1 ? 'voto' : 'votos'}</div>
+      <p><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="${gmapsUrl(w)}">Ver en Google Maps 🗺️</a></p></div>`;
   } else wb.classList.add('hidden');
 
   // Caja de nombre

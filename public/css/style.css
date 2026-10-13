@@ -92,4 +92,10 @@ button{font-size:1rem;border:0;border-radius:10px;padding:12px 18px;cursor:point
 .voter-chip:active,.voter-chip.sel{background:#2b2b2b;color:#fff}
 .locate-btn{background:#fff;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;font-size:1.1rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
 .locate-btn:active{background:#f1e9db}
+.back-link{color:var(--accent);text-decoration:none;font-size:.9rem}
+#pickMap{height:340px;border-radius:10px;margin-top:8px;z-index:0}
+.map-ctl{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
+.map-ctl select{padding:8px;border:1px solid var(--line);border-radius:8px;font-size:.95rem;background:#fff}
+.pick-pin{width:22px;height:22px;border-radius:99px;background:#c96f2e;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);color:#fff;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center}
+.pick-pin.sel{background:#2b2b2b}
 .me-dot{background:#1d4ed8;border:3px solid #fff;border-radius:99px;box-shadow:0 0 0 2px rgba(29,78,216,.4), 0 1px 4px rgba(0,0,0,.35)}

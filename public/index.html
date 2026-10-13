@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Votación en grupo 🗳️</title>
 <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 <header class="top">
@@ -29,6 +31,26 @@
   </div>
 
   <div id="results"></div>
+
+  <div class="card">
+    <strong>🗺️ Elige por mapa</strong>
+    <p class="hint">Filtra por distancia y toca los pines para añadir lugares.</p>
+    <div class="map-ctl">
+      <button class="btn-ghost btn-small" id="geoBtn">📍 Mi ubicación</button>
+      <label class="hint" for="radiusSel">Radio:</label>
+      <select id="radiusSel">
+        <option value="1">1 milla</option>
+        <option value="2">2 millas</option>
+        <option value="5" selected>5 millas</option>
+        <option value="10">10 millas</option>
+        <option value="25">25 millas</option>
+        <option value="50">50 millas</option>
+        <option value="100">100 millas</option>
+      </select>
+    </div>
+    <div id="pickMap"></div>
+    <p class="hint" id="pickHint">Cargando lugares…</p>
+  </div>
 
   <div class="card">
     <label for="linkInput"><strong>3. O añade un lugar con link</strong></label>

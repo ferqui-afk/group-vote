@@ -176,6 +176,26 @@ setInterval(() => {
   console.log('Limpieza: ' + old.length + ' salas vencidas eliminadas');
 }, 3600 * 1000);
 
+// ---- Lugares cercanos a un punto (para elegir por mapa) ----
+app.get('/api/places/near', (req, res) => {
+  const lat = parseFloat(req.query.lat), lng = parseFloat(req.query.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng))
+    return res.status(400).json({ error: 'Faltan coordenadas' });
+  const miles = Math.min(200, Math.max(0.1, parseFloat(req.query.miles) || 10));
+  const rows = db.prepare(`SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng
+    FROM places WHERE lat IS NOT NULL AND lng IS NOT NULL`).all();
+  const R = 3958.8, toRad = d => d * Math.PI / 180;
+  const out = [];
+  for (const p of rows) {
+    const a = Math.sin(toRad(p.lat - lat) / 2) ** 2 +
+      Math.cos(toRad(lat)) * Math.cos(toRad(p.lat)) * Math.sin(toRad(p.lng - lng) / 2) ** 2;
+    const d = 2 * R * Math.asin(Math.sqrt(a));
+    if (d <= miles) out.push({ ...p, distance: Math.round(d * 10) / 10 });
+  }
+  out.sort((a, b) => a.distance - b.distance);
+  res.json({ places: out.slice(0, 250), count: out.length });
+});
+
 // ---- Resolver links de Instagram / Google Maps para añadir lugares ----
 function numOrNull(v) {
   const n = parseFloat(v);

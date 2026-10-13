@@ -41,11 +41,12 @@ function render(){
   updateBar();
 }
 function toggle(id){
-  const p = lastResults.find(x => x.id === id);
+  const p = lastResults.find(x => x.id === id) || nearCache.get(id);
   if (!p) return;
   if (selected.has(id)) selected.delete(id);
   else { if (selected.size >= 12) { alert('Máximo 12 lugares por votación'); return; } selected.set(id, p); }
   render();
+  refreshPickPins();
 }
 function updateBar(){
   const n = selected.size;
@@ -171,6 +172,76 @@ async function confirmLinkPlace(){
   btn.disabled = false; btn.textContent = 'Añadir a la votación';
 }
 
+// ---- Elegir lugares por mapa (filtro por millas) ----
+const nearCache = new Map();
+let pickMap = null, pickCenter = null, pickPins = [], pickCircle = null, pickCenterDot = null;
+const BA_AIRBNB = { lat: -34.5928367, lng: -58.4218671 };
+function pickIcon(sel){
+  return L.divIcon({ className: '', html: `<div class="pick-pin${sel ? ' sel' : ''}">${sel ? '✓' : ''}</div>`,
+    iconSize: [22, 22], iconAnchor: [11, 11] });
+}
+function refreshPickPins(){
+  pickPins.forEach(m => m.setIcon(pickIcon(selected.has(m._pid))));
+}
+async function loadNearby(fit){
+  if (!pickMap || !pickCenter) return;
+  const miles = parseFloat($('radiusSel').value);
+  $('pickHint').textContent = 'Buscando lugares…';
+  try {
+    const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${miles}`);
+    const data = await r.json();
+    pickPins.forEach(m => pickMap.removeLayer(m)); pickPins = [];
+    nearCache.clear();
+    if (pickCircle) pickMap.removeLayer(pickCircle);
+    if (pickCenterDot) pickMap.removeLayer(pickCenterDot);
+    pickCircle = L.circle([pickCenter.lat, pickCenter.lng], {
+      radius: miles * 1609.34, color: '#c96f2e', weight: 1.5, fillOpacity: 0.07 }).addTo(pickMap);
+    pickCenterDot = L.marker([pickCenter.lat, pickCenter.lng], {
+      icon: L.divIcon({ className: '', html: '<div class="me-dot" style="width:14px;height:14px"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
+    }).addTo(pickMap).bindPopup('Centro de búsqueda');
+    data.places.forEach(p => {
+      nearCache.set(p.id, p);
+      const m = L.marker([p.lat, p.lng], { icon: pickIcon(selected.has(p.id)) }).addTo(pickMap);
+      m._pid = p.id;
+      m.bindPopup(`<strong>${esc(p.name)}</strong><br>
+        <span style="color:#666;font-size:.85rem">${esc(p.type || '')}${p.type ? ' · ' : ''}${p.distance} mi</span><br>
+        <button data-pick="${esc(p.id)}" class="btn-ghost btn-small" style="margin-top:6px">${selected.has(p.id) ? 'Quitar ✕' : 'Añadir ✓'}</button>`);
+      pickPins.push(m);
+    });
+    $('pickHint').textContent = `${data.count} lugares dentro de ${miles} ${miles === 1 ? 'milla' : 'millas'}. Toca un pin para añadirlo.`;
+    if (fit) pickMap.fitBounds(pickCircle.getBounds().pad(0.05));
+  } catch(e){ $('pickHint').textContent = 'No se pudo cargar los lugares.'; }
+}
+function initPickMap(){
+  pickCenter = { ...BA_AIRBNB };
+  pickMap = L.map('pickMap', { scrollWheelZoom: false }).setView([pickCenter.lat, pickCenter.lng], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(pickMap);
+  $('pickMap').addEventListener('click', e => {
+    const b = e.target.closest('[data-pick]');
+    if (!b) return;
+    toggle(b.dataset.pick);
+    b.textContent = selected.has(b.dataset.pick) ? 'Quitar ✕' : 'Añadir ✓';
+  });
+  $('radiusSel').addEventListener('change', () => loadNearby(true));
+  $('geoBtn').addEventListener('click', () => {
+    if (!navigator.geolocation) { alert('Tu navegador no da ubicación'); return; }
+    $('geoBtn').disabled = true;
+    navigator.geolocation.getCurrentPosition(pos => {
+      pickCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      loadNearby(true);
+      $('geoBtn').disabled = false;
+    }, () => { alert('No se pudo obtener tu ubicación'); $('geoBtn').disabled = false; }, { timeout: 10000 });
+  });
+  loadNearby(true);
+  // Intento silencioso: si ya dio permiso antes, centrar en él
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      pickCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      loadNearby(true);
+    }, () => {}, { timeout: 6000, maximumAge: 300000 });
+  }
+}
+
 // ---- Dashboard de mis votaciones ----
 function myRoomCodes(){
   const codes = [];
@@ -186,22 +257,33 @@ function statusBadge(state){
   return `<span class="status ${cls}">${label}</span>`;
 }
 async function loadDashboard(){
-  const codes = myRoomCodes();
+  const orgCodes = myRoomCodes();
+  const votedCodes = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith('gv_voted_')) votedCodes.push(k.slice('gv_voted_'.length));
+  }
   const box = $('dashCard'), list = $('dashList');
-  if (!codes.length) { box.classList.add('hidden'); return; }
+  if (!orgCodes.length && !votedCodes.length) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
   list.innerHTML = '<p class="hint">Cargando…</p>';
-  const rooms = [];
-  for (const c of codes) {
-    try {
-      const r = await fetch('/api/rooms/' + c);
-      if (!r.ok) { localStorage.removeItem('gv_org_' + c); continue; }
-      rooms.push(await r.json());
-    } catch(e){ /* offline: se intenta luego */ }
+  async function fetchRooms(codes, skipPrefix){
+    const rooms = [];
+    for (const c of codes) {
+      if (skipPrefix && orgCodes.includes(c)) continue; // ya sale arriba
+      try {
+        const r = await fetch('/api/rooms/' + c);
+        if (!r.ok) { localStorage.removeItem(skipPrefix + c); continue; }
+        rooms.push(await r.json());
+      } catch(e){}
+    }
+    rooms.sort((a, b) => b.createdAt - a.createdAt);
+    return rooms;
   }
-  rooms.sort((a, b) => b.createdAt - a.createdAt);
-  if (!rooms.length) { box.classList.add('hidden'); return; }
-  list.innerHTML = rooms.map(rm => {
+  const orgRooms = await fetchRooms(orgCodes, 'gv_org_');
+  const votedRooms = await fetchRooms(votedCodes, 'gv_voted_');
+  if (!orgRooms.length && !votedRooms.length) { box.classList.add('hidden'); return; }
+  const row = rm => {
     const lead = rm.state === 'open'
       ? (rm.candidates[0] && rm.candidates[0].votes > 0
           ? `👑 Va ganando: <strong>${esc(rm.candidates[0].name)}</strong> (${rm.candidates[0].votes})`
@@ -214,8 +296,12 @@ async function loadDashboard(){
       </div>
       <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">Ver</a>
     </div>`;
-  }).join('');
+  };
+  list.innerHTML =
+    (orgRooms.length ? `<p class="hint" style="margin:0 0 4px"><strong>Creadas por ti</strong></p>` + orgRooms.map(row).join('') : '') +
+    (votedRooms.length ? `<p class="hint" style="margin:10px 0 4px"><strong>Donde votaste</strong></p>` + votedRooms.map(row).join('') : '');
 }
 doSearch();
 loadDashboard();
 setInterval(loadDashboard, 15000);
+initPickMap();
