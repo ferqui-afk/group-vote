@@ -116,17 +116,22 @@ function main() {
     id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT DEFAULT '',
     address TEXT DEFAULT '', lat REAL, lng REAL, hours TEXT DEFAULT '',
     notes TEXT DEFAULT '', image TEXT, neighborhood TEXT DEFAULT '',
-    search_text TEXT DEFAULT ''
+    search_text TEXT DEFAULT '', reel_url TEXT DEFAULT ''
   )`);
   const cols = db.prepare('PRAGMA table_info(places)').all().map(c => c.name);
   if (!cols.includes('search_text')) db.exec('ALTER TABLE places ADD COLUMN search_text TEXT DEFAULT \'\'');
+  if (!cols.includes('reel_url')) db.exec('ALTER TABLE places ADD COLUMN reel_url TEXT DEFAULT \'\'');
   const ins = db.prepare(`INSERT OR REPLACE INTO places
-    (id, name, type, address, lat, lng, hours, notes, image, neighborhood, search_text)
-    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @notes, @image, @neighborhood, @search_text)`);
-  db.transaction((list) => { for (const p of list) ins.run(p); })(places);
+    (id, name, type, address, lat, lng, hours, notes, image, neighborhood, search_text, reel_url)
+    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @notes, @image, @neighborhood, @search_text, @reel_url)`);
+  db.transaction((list) => { for (const p of list) { p.reel_url = p.reel_url || ''; ins.run(p); } })(places);
   const n = db.prepare('SELECT COUNT(*) AS c FROM places').get().c;
   db.close();
   console.log('SQLite: ' + n + ' lugares en ' + dbPath);
+  // Enriquecer con reels del mapa privado (hace match por nombre)
+  try {
+    require('./add-reels').main();
+  } catch (e) { console.error('Aviso: no se pudieron agregar reels: ' + e.message); }
   return { total: places.length, withImage };
 }
 

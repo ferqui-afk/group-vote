@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS places (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT DEFAULT '',
   address TEXT DEFAULT '', lat REAL, lng REAL, hours TEXT DEFAULT '',
   notes TEXT DEFAULT '', image TEXT, neighborhood TEXT DEFAULT '',
-  search_text TEXT DEFAULT ''
+  search_text TEXT DEFAULT '', reel_url TEXT DEFAULT ''
 );
 CREATE TABLE IF NOT EXISTS rooms (
   code TEXT PRIMARY KEY, title TEXT NOT NULL,
@@ -62,6 +62,9 @@ db.exec(`CREATE INDEX IF NOT EXISTS idx_votes_room ON votes(room_code);
 `);
 if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'search_text')) {
   db.exec("ALTER TABLE places ADD COLUMN search_text TEXT DEFAULT ''");
+}
+if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'reel_url')) {
+  db.exec("ALTER TABLE places ADD COLUMN reel_url TEXT DEFAULT ''");
 }
 
 const ROOM_TTL_MS = 24 * 3600 * 1000;
@@ -103,7 +106,7 @@ function roomState(room) {
 function roomPayload(req, room, deviceToken) {
   const state = roomState(room);
   const cands = db.prepare(
-    `SELECT p.id, p.name, p.type, p.address, p.hours, p.notes, p.image, p.neighborhood
+    `SELECT p.id, p.name, p.type, p.address, p.hours, p.notes, p.image, p.neighborhood, p.reel_url, p.lat, p.lng
      FROM room_candidates rc JOIN places p ON p.id = rc.place_id
      WHERE rc.room_code=? ORDER BY rc.position`).all(room.code);
   const counts = db.prepare(
@@ -144,8 +147,8 @@ function seedIfEmpty() {
   if (!fs.existsSync(seedPath)) { console.log('Sin semilla: data/places.json no existe. Corre: npm run import'); return 0; }
   const places = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
   const ins = db.prepare(`INSERT OR REPLACE INTO places
-    (id, name, type, address, lat, lng, hours, notes, image, neighborhood, search_text)
-    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @notes, @image, @neighborhood, @search_text)`);
+    (id, name, type, address, lat, lng, hours, notes, image, neighborhood, search_text, reel_url)
+    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @notes, @image, @neighborhood, @search_text, @reel_url)`);
   db.transaction(list => {
     for (const p of list) {
       if (!p.search_text) p.search_text = norm([p.name, p.type, p.address, p.notes, p.neighborhood].join(' '));
@@ -179,12 +182,12 @@ app.get('/api/places', (req, res) => {
   let rows;
   if (q) {
     rows = db.prepare(
-      `SELECT id, name, type, address, hours, notes, image, neighborhood FROM places
+      `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
        WHERE search_text LIKE ? ORDER BY name LIMIT 60`)
       .all('%' + q.replace(/[%_]/g, '') + '%');
   } else {
     rows = db.prepare(
-      `SELECT id, name, type, address, hours, notes, image, neighborhood FROM places
+      `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
        ORDER BY name LIMIT 60`).all();
   }
   res.json({ places: rows });

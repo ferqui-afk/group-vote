@@ -5,15 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Votar 🗳️</title>
 <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
 <header class="top">
   <h1 id="roomTitle">🗳️ Votación</h1>
   <p><span class="status open" id="roomStatus">…</span> <span id="voteCount" class="hint"></span></p>
 </header>
-<main>
+<main class="vote-main">
   <div id="winnerBox" class="hidden"></div>
-  <div id="candidates"></div>
+  <div id="voteMap"></div>
+  <div id="nameBox" class="card center hidden">
+    <p class="hint" style="margin:0 0 8px">✏️ Escribe tu nombre para votar:</p>
+    <input id="nameInput" maxlength="40" placeholder="Tu nombre" autocomplete="name">
+  </div>
+  <div id="carousel" class="carousel"></div>
+  <div class="dots" id="dots"></div>
   <div class="card center hidden" id="orgCard">
     <p class="hint">Eres el organizador de esta votación.</p>
     <button class="btn-ghost" id="closeBtn">Cerrar votación y ver ganador</button>
