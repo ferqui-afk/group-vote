@@ -24,11 +24,12 @@
     <input type="text" id="title" class="mt" placeholder="Ej. Cena del viernes" maxlength="80">
   </div>
 
-  <div class="card">
+  <div class="card" id="pickMapCard">
     <strong>🗺️ Elige por mapa</strong>
     <p class="hint">Filtra por distancia y toca los pines para añadir lugares.</p>
     <div class="map-ctl">
       <button class="btn-ghost btn-small" id="geoBtn">📍 Mi ubicación</button>
+      <button class="btn-ghost btn-small" id="expandMapBtn">⛶ Expandir</button>
       <label class="hint" for="radiusSel">Radio:</label>
       <select id="radiusSel">
         <option value="1">1 milla</option>

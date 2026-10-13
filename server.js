@@ -196,6 +196,18 @@ app.get('/api/places/near', (req, res) => {
   res.json({ places: out.slice(0, 250), count: out.length });
 });
 
+// ---- Eliminar votación (solo organizador) ----
+app.delete('/api/rooms/:code', (req, res) => {
+  const room = getRoom(req.params.code);
+  if (!room) return res.status(404).json({ error: 'No encontrada' });
+  const t = String((req.body && req.body.organizerToken) || '');
+  if (!t || t !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
+  db.prepare('DELETE FROM votes WHERE room_code=?').run(room.code);
+  db.prepare('DELETE FROM room_candidates WHERE room_code=?').run(room.code);
+  db.prepare('DELETE FROM rooms WHERE code=?').run(room.code);
+  res.json({ ok: true });
+});
+
 // ---- Resolver links de Instagram / Google Maps para añadir lugares ----
 function numOrNull(v) {
   const n = parseFloat(v);

@@ -12,13 +12,19 @@ function imgTag(p){
 function placeCard(p){
   const sel = selected.has(p.id) ? ' selected' : '';
   const linkBadge = String(p.id).startsWith('custom-') ? '<span class="badge">🔗</span>' : '';
+  const hasX = (p.hours && p.hours.trim()) || (p.notes && p.notes.trim());
   return `<div class="pick-card${sel}" data-id="${esc(p.id)}">
+    ${hasX ? `<button class="card-x" data-x="${esc(p.id)}" aria-label="ver horarios">ⓘ</button>` : ''}
     ${imgTag(p)}
     <div class="info">
       <div class="name">${esc(p.name)}${selected.has(p.id) ? '<span class="badge">✓</span>' : ''}${linkBadge}</div>
       ${p.type ? `<div class="type">${esc(p.type)}</div>` : ''}
       ${p.distance != null ? `<div class="dist">📍 ${p.distance} mi</div>` : ''}
       ${p.address ? `<div class="addr">${esc(p.address.slice(0, 60))}${p.address.length > 60 ? '…' : ''}</div>` : ''}
+      ${hasX ? `<div class="xinfo hidden">
+        ${p.hours ? `<div class="hours">🕐 ${esc(p.hours)}</div>` : ''}
+        ${p.notes ? `<div class="notes">${esc(p.notes)}</div>` : ''}
+      </div>` : ''}
     </div>
   </div>`;
 }
@@ -26,7 +32,7 @@ function placeCard(p){
 let lastResults = [];
 let carouselSeeded = false;
 async function seedCarousel(){
-  // Empieza con los 5 lugares más cercanos al centro del mapa
+  // Empieza con todos los lugares cercanos al centro del mapa
   if (!pickCenter) pickCenter = { ...BA_AIRBNB };
   if ($('search').value.trim()) return;
   for (const m of [5, 25, 100]) {
@@ -34,7 +40,7 @@ async function seedCarousel(){
       const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${m}`);
       const data = await r.json();
       if (data.places && data.places.length) {
-        lastResults = data.places.slice(0, 5);
+        lastResults = data.places;
         carouselSeeded = true;
         render();
         return;
@@ -59,11 +65,20 @@ function render(){
   $('countHint').textContent = q
     ? lastResults.length + ' resultados. Toca para elegir o quitar.'
     : (lastResults.length
-        ? 'Empieza con los más cercanos. Toca para elegir o busca más.'
+        ? lastResults.length + ' lugares cerca. Toca para elegir, ⓘ para ver horarios.'
         : 'No hay lugares cerca de este punto. Amplía el radio o busca por nombre.');
   $('results').innerHTML = lastResults.map(placeCard).join('') || '<p class="hint">Sin resultados.</p>';
   $('results').querySelectorAll('.pick-card').forEach(el => {
     el.addEventListener('click', () => toggle(el.dataset.id));
+  });
+  $('results').querySelectorAll('[data-x]').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const card = b.closest('.pick-card');
+      const xi = card.querySelector('.xinfo');
+      const open = xi.classList.toggle('hidden');
+      b.textContent = open ? 'ⓘ' : '✕';
+    });
   });
   updateBar();
 }
@@ -255,6 +270,12 @@ function initPickMap(){
     b.textContent = selected.has(b.dataset.pick) ? 'Quitar ✕' : 'Añadir ✓';
   });
   $('radiusSel').addEventListener('change', () => loadNearby(true));
+  $('expandMapBtn').addEventListener('click', () => {
+    const c = $('pickMapCard');
+    const full = c.classList.toggle('map-full');
+    $('expandMapBtn').textContent = full ? '✕ Cerrar' : '⛶ Expandir';
+    setTimeout(() => pickMap && pickMap.invalidateSize(), 80);
+  });
   $('geoBtn').addEventListener('click', () => {
     if (!navigator.geolocation) { alert('Tu navegador no da ubicación'); return; }
     $('geoBtn').disabled = true;
@@ -309,7 +330,7 @@ async function loadDashboard(){
   const orgRooms = await fetchRooms(orgCodes, 'gv_org_', null);
   const votedRooms = await fetchRooms(votedCodes, 'gv_voted_', new Set(orgCodes));
   if (!orgRooms.length && !votedRooms.length) { box.classList.add('hidden'); return; }
-  const row = (rm, origin) => {
+  const row = (rm, origin, canDelete) => {
     const lead = rm.state === 'open'
       ? (rm.candidates[0] && rm.candidates[0].votes > 0
           ? `👑 Va ganando: <strong>${esc(rm.candidates[0].name)}</strong> (${rm.candidates[0].votes})`
@@ -321,19 +342,37 @@ async function loadDashboard(){
         <div class="hint">${rm.totalVotes === 1 ? '1 voto' : rm.totalVotes + ' votos'} · ${lead}</div>
       </div>
       <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">Ver</a>
+      ${canDelete ? `<button class="btn-ghost btn-small" data-del="${esc(rm.code)}" title="Eliminar votación">🗑️</button>` : ''}
     </div>`;
   };
   const tagged = [
-    ...orgRooms.map(r => ({ r, origin: 'creada por ti' })),
-    ...votedRooms.map(r => ({ r, origin: 'votaste' }))
+    ...orgRooms.map(r => ({ r, origin: 'creada por ti', canDelete: true })),
+    ...votedRooms.map(r => ({ r, origin: 'votaste', canDelete: false }))
   ];
   const actives = tagged.filter(x => x.r.state === 'open');
   const history = tagged.filter(x => x.r.state !== 'open');
   list.innerHTML =
     (actives.length ? `<p class="hint" style="margin:0 0 4px"><strong>🟢 Votaciones activas</strong></p>` +
-      actives.map(x => row(x.r, x.origin)).join('') : '') +
+      actives.map(x => row(x.r, x.origin, x.canDelete)).join('') : '') +
     (history.length ? `<p class="hint" style="margin:12px 0 4px"><strong>📜 Historial</strong></p>` +
-      history.map(x => row(x.r, x.origin)).join('') : '');
+      history.map(x => row(x.r, x.origin, x.canDelete)).join('') : '');
+  list.querySelectorAll('[data-del]').forEach(b => {
+    b.addEventListener('click', async () => {
+      const code = b.dataset.del;
+      const rm = tagged.find(x => x.r.code === code);
+      if (!confirm(`¿Eliminar la votación "${rm ? rm.r.title : code}"? Se borrará para todos.`)) return;
+      b.disabled = true;
+      try {
+        const r = await fetch('/api/rooms/' + code, {
+          method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ organizerToken: localStorage.getItem('gv_org_' + code) })
+        });
+        if (!r.ok) throw new Error((await r.json()).error || 'Error');
+        localStorage.removeItem('gv_org_' + code);
+        loadDashboard();
+      } catch(e){ alert('No se pudo eliminar: ' + e.message); b.disabled = false; }
+    });
+  });
 }
 initPickMap();
 seedCarousel();
