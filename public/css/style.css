@@ -142,7 +142,7 @@ html[data-theme="dark"] .bar{background:#3a322a}
 html[data-theme="dark"] .selectable.selected{background:#3a241a}
 html[data-theme="dark"] .chip{background:#3a322a}
 html[data-theme="dark"] .pick-card{background:#241f19}
-html[data-theme="dark"] .pick-card .type,html[data-theme="dark"] .pick-card .addr{color:#b3a897}
+html[data-theme="dark"] .pick-card .type,html[data-theme="dark"] .pick-card .addr{color:#d6d3d1}
 html[data-theme="dark"] .status.open{background:#14532d;color:#bbf7d0}
 html[data-theme="dark"] .status.closed{background:#7f1d1d;color:#fecaca}
 html[data-theme="dark"] .status.expired{background:#3a322a;color:#d6d3d1}
@@ -167,5 +167,5 @@ html[data-theme="dark"] .winner{background:#1c2b1e}
 html[data-theme="dark"] .winner h2{color:#4ade80}
 html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#2c261e;color:var(--ink)}
 html[data-theme="dark"] #nameBox input{background:#2c261e;color:var(--ink)}
-html[data-theme="dark"] .xinfo .hours{color:#b3a897}
+html[data-theme="dark"] .xinfo .hours{color:#d6d3d1}
 html[data-theme="dark"] .xinfo .notes{color:#d6d3d1}
