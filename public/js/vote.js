@@ -11,6 +11,8 @@ function imgTag(p){
 }
 function votedFlag(){ return localStorage.getItem('gv_voted_' + code) === '1'; }
 function setVotedFlag(){ localStorage.setItem('gv_voted_' + code, '1'); }
+function savedName(){ return localStorage.getItem('gv_name_' + code) || ''; }
+function saveName(n){ localStorage.setItem('gv_name_' + code, n); }
 
 function statusLabel(state){
   if (state === 'open') return ['open', 'Abierta'];
@@ -55,10 +57,20 @@ function render(room){
   } else wb.classList.add('hidden');
 
   const maxVotes = Math.max(1, ...room.candidates.map(c => c.votes));
-  $('candidates').innerHTML = room.candidates.map(c => {
+  const showNameBox = room.state === 'open' && !votedFlag();
+  $('candidates').innerHTML =
+    (showNameBox ? `<div class="card center"><p class="hint" style="margin:0 0 8px">✏️ Escribe tu nombre para votar:</p>
+      <input id="nameInput" maxlength="40" placeholder="Tu nombre" value="${esc(savedName())}"
+        style="width:100%;max-width:320px;padding:10px 12px;font-size:1rem;border:1px solid #ddd;border-radius:10px;text-align:center">
+    </div>` : '') +
+    room.candidates.map(c => {
     const mine = myVote === c.id;
     const pct = Math.round(c.votes / maxVotes * 100);
     const canVote = room.state === 'open' && !votedFlag();
+    const named = (c.voters || []).filter(Boolean);
+    const anon = c.votes - named.length;
+    const voterLine = named.length || anon > 0
+      ? `<div class="hint">👤 ${esc(named.join(', '))}${named.length && anon > 0 ? ', ' : ''}${anon > 0 ? anon + ' anónimo' + (anon>1?'s':'') : ''}</div>` : '';
     return `<div class="card">
       <div class="place">${imgTag(c)}
         <div class="info">
@@ -70,6 +82,7 @@ function render(room){
         </div>
       </div>
       <div class="result-line"><span><strong>${c.votes}</strong> ${c.votes===1?'voto':'votos'}</span></div>
+      ${voterLine}
       <div class="bar"><div style="width:${pct}%"></div></div>
       ${canVote ? `<button class="vote-btn" data-id="${esc(c.id)}">Votar por este lugar</button>` : ''}
     </div>`;
@@ -97,9 +110,13 @@ function render(room){
 }
 
 async function vote(placeId){
+  const nameInput = $('nameInput');
+  const name = (nameInput ? nameInput.value : savedName()).trim();
+  if (!name) { alert('Escribe tu nombre para votar 🙂'); if (nameInput) nameInput.focus(); return; }
+  saveName(name);
   const r = await fetch('/api/rooms/' + code + '/vote', {
     method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ placeId })
+    body: JSON.stringify({ placeId, name })
   });
   const data = await r.json();
   if (!r.ok) { alert(data.error || 'No se pudo votar'); return; }

@@ -53,7 +53,12 @@ CREATE TABLE IF NOT EXISTS votes (
   place_id TEXT NOT NULL, created_at INTEGER NOT NULL,
   PRIMARY KEY (room_code, device_token)
 );
-CREATE INDEX IF NOT EXISTS idx_votes_room ON votes(room_code);
+`);
+ // Migración: agregar voter_name si la tabla ya existía sin esa columna
+if (!db.prepare('PRAGMA table_info(votes)').all().some(c => c.name === 'voter_name')) {
+  db.exec("ALTER TABLE votes ADD COLUMN voter_name TEXT DEFAULT ''");
+}
+db.exec(`CREATE INDEX IF NOT EXISTS idx_votes_room ON votes(room_code);
 `);
 if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'search_text')) {
   db.exec("ALTER TABLE places ADD COLUMN search_text TEXT DEFAULT ''");
@@ -105,8 +110,17 @@ function roomPayload(req, room, deviceToken) {
     'SELECT place_id, COUNT(*) AS c FROM votes WHERE room_code=? GROUP BY place_id').all(room.code);
   const byId = {};
   for (const r of counts) byId[r.place_id] = r.c;
+  const voterRows = db.prepare(
+    'SELECT place_id, voter_name FROM votes WHERE room_code=? ORDER BY created_at').all(room.code);
+  const votersById = {};
+  for (const r of voterRows) {
+    (votersById[r.place_id] = votersById[r.place_id] || []).push(r.voter_name || '');
+  }
   let total = 0;
-  const candidates = cands.map(c => { const v = byId[c.id] || 0; total += v; return { ...c, votes: v }; });
+  const candidates = cands.map(c => {
+    const v = byId[c.id] || 0; total += v;
+    return { ...c, votes: v, voters: votersById[c.id] || [] };
+  });
   candidates.sort((a, b) => b.votes - a.votes);
   const mine = deviceToken
     ? db.prepare('SELECT place_id FROM votes WHERE room_code=? AND device_token=?').get(room.code, deviceToken)
@@ -207,12 +221,13 @@ app.post('/api/rooms/:code/vote', (req, res) => {
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (roomState(room) !== 'open') return res.status(409).json({ error: 'La votación está cerrada' });
   const placeId = String(req.body.placeId || '');
+  const voterName = String(req.body.name || '').slice(0, 40).trim();
   const isCandidate = db.prepare('SELECT 1 FROM room_candidates WHERE room_code=? AND place_id=?').get(room.code, placeId);
   if (!isCandidate) return res.status(400).json({ error: 'Candidato inválido' });
   const token = getDeviceToken(req, res);
-  db.prepare(`INSERT INTO votes (room_code, device_token, place_id, created_at) VALUES (?,?,?,?)
-              ON CONFLICT(room_code, device_token) DO UPDATE SET place_id=excluded.place_id, created_at=excluded.created_at`)
-    .run(room.code, token, placeId, Date.now());
+  db.prepare(`INSERT INTO votes (room_code, device_token, place_id, created_at, voter_name) VALUES (?,?,?,?,?)
+              ON CONFLICT(room_code, device_token) DO UPDATE SET place_id=excluded.place_id, created_at=excluded.created_at, voter_name=excluded.voter_name`)
+    .run(room.code, token, placeId, Date.now(), voterName);
   res.json(roomPayload(req, room, token));
 });
 
