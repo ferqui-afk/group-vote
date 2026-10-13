@@ -35,6 +35,7 @@ db.exec(`
 CREATE TABLE IF NOT EXISTS places (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT DEFAULT '',
   address TEXT DEFAULT '', lat REAL, lng REAL, hours TEXT DEFAULT '',
+  hours_json TEXT DEFAULT '',
   notes TEXT DEFAULT '', image TEXT, neighborhood TEXT DEFAULT '',
   search_text TEXT DEFAULT '', reel_url TEXT DEFAULT ''
 );
@@ -62,6 +63,9 @@ db.exec(`CREATE INDEX IF NOT EXISTS idx_votes_room ON votes(room_code);
 `);
 if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'search_text')) {
   db.exec("ALTER TABLE places ADD COLUMN search_text TEXT DEFAULT ''");
+}
+if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'hours_json')) {
+  db.exec("ALTER TABLE places ADD COLUMN hours_json TEXT DEFAULT ''");
 }
 if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'reel_url')) {
   db.exec("ALTER TABLE places ADD COLUMN reel_url TEXT DEFAULT ''");
@@ -147,8 +151,8 @@ function seedIfEmpty() {
   if (!fs.existsSync(seedPath)) { console.log('Sin semilla: data/places.json no existe. Corre: npm run import'); return 0; }
   const places = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
   const ins = db.prepare(`INSERT OR REPLACE INTO places
-    (id, name, type, address, lat, lng, hours, notes, image, neighborhood, search_text, reel_url)
-    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @notes, @image, @neighborhood, @search_text, @reel_url)`);
+    (id, name, type, address, lat, lng, hours, hours_json, notes, image, neighborhood, search_text, reel_url)
+    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @hours_json, @notes, @image, @neighborhood, @search_text, @reel_url)`);
   db.transaction(list => {
     for (const p of list) {
       if (!p.search_text) p.search_text = norm([p.name, p.type, p.address, p.notes, p.neighborhood].join(' '));
@@ -176,21 +180,52 @@ setInterval(() => {
   console.log('Limpieza: ' + old.length + ' salas vencidas eliminadas');
 }, 3600 * 1000);
 
+// ---- Abierto ahora (horarios estructurados del mapa privado) ----
+const WD_SHORT = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+function isOpenNow(hoursJson) {
+  if (!hoursJson) return false;
+  try {
+    const { tz, periods } = JSON.parse(hoursJson);
+    if (!periods) return false;
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz || 'America/Argentina/Buenos_Aires',
+      weekday: 'short', hour: 'numeric', minute: 'numeric', hour12: false
+    });
+    const parts = {};
+    for (const p of dtf.formatToParts(new Date())) parts[p.type] = p.value;
+    const wd = WD_SHORT[parts.weekday];
+    if (wd == null) return false;
+    const t = (parseInt(parts.hour, 10) % 24) * 60 + parseInt(parts.minute, 10);
+    const today = periods[String(wd)] || [];
+    for (const [o, c] of today) {
+      if (t >= o && (c == null || t < Math.min(c, 1440))) return true;
+    }
+    // trasnoche del dia anterior (cierre > 1440)
+    const prev = periods[String((wd + 6) % 7)] || [];
+    for (const [o, c] of prev) {
+      if (c != null && c > 1440 && t < (c - 1440)) return true;
+    }
+    return false;
+  } catch { return false; }
+}
+
 // ---- Lugares cercanos a un punto (para elegir por mapa) ----
 app.get('/api/places/near', (req, res) => {
   const lat = parseFloat(req.query.lat), lng = parseFloat(req.query.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng))
     return res.status(400).json({ error: 'Faltan coordenadas' });
   const miles = Math.min(200, Math.max(0.1, parseFloat(req.query.miles) || 10));
-  const rows = db.prepare(`SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng
+  const openNow = req.query.openNow === '1';
+  const rows = db.prepare(`SELECT id, name, type, address, lat, lng, hours, hours_json, notes, image, neighborhood, reel_url
     FROM places WHERE lat IS NOT NULL AND lng IS NOT NULL`).all();
   const R = 3958.8, toRad = d => d * Math.PI / 180;
   const out = [];
   for (const p of rows) {
+    if (openNow && !isOpenNow(p.hours_json)) continue;
     const a = Math.sin(toRad(p.lat - lat) / 2) ** 2 +
       Math.cos(toRad(lat)) * Math.cos(toRad(p.lat)) * Math.sin(toRad(p.lng - lng) / 2) ** 2;
     const d = 2 * R * Math.asin(Math.sqrt(a));
-    if (d <= miles) out.push({ ...p, distance: Math.round(d * 10) / 10 });
+    if (d <= miles) out.push({ ...p, hours_json: undefined, distance: Math.round(d * 10) / 10 });
   }
   out.sort((a, b) => a.distance - b.distance);
   res.json({ places: out.slice(0, 250), count: out.length });

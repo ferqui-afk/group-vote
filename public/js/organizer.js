@@ -35,9 +35,10 @@ async function seedCarousel(){
   // Empieza con todos los lugares cercanos al centro del mapa
   if (!pickCenter) pickCenter = { ...BA_AIRBNB };
   if ($('search').value.trim()) return;
+  const on = $('openNowSw').checked ? '&openNow=1' : '';
   for (const m of [5, 25, 100]) {
     try {
-      const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${m}`);
+      const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${m}${on}`);
       const data = await r.json();
       if (data.places && data.places.length) {
         lastResults = data.places;
@@ -233,9 +234,10 @@ function refreshPickPins(){
 async function loadNearby(fit){
   if (!pickMap || !pickCenter) return;
   const miles = parseFloat($('radiusSel').value);
+  const on = $('openNowSw').checked ? '&openNow=1' : '';
   $('pickHint').textContent = 'Buscando lugares…';
   try {
-    const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${miles}`);
+    const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${miles}${on}`);
     const data = await r.json();
     pickPins.forEach(m => pickMap.removeLayer(m)); pickPins = [];
     nearCache.clear();
@@ -270,6 +272,7 @@ function initPickMap(){
     b.textContent = selected.has(b.dataset.pick) ? 'Quitar ✕' : 'Añadir ✓';
   });
   $('radiusSel').addEventListener('change', () => loadNearby(true));
+  $('openNowSw').addEventListener('change', () => { loadNearby(true); seedCarousel(); });
   $('expandMapBtn').addEventListener('click', () => {
     const c = $('pickMapCard');
     const full = c.classList.toggle('map-full');
