@@ -288,10 +288,10 @@ async function loadDashboard(){
   if (!orgCodes.length && !votedCodes.length) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
   list.innerHTML = '<p class="hint">Cargando…</p>';
-  async function fetchRooms(codes, skipPrefix){
+  async function fetchRooms(codes, skipPrefix, skipSet){
     const rooms = [];
     for (const c of codes) {
-      if (skipPrefix && orgCodes.includes(c)) continue; // ya sale arriba
+      if (skipSet && skipSet.has(c)) continue; // ya listada en la otra sección
       try {
         const r = await fetch('/api/rooms/' + c);
         if (!r.ok) { localStorage.removeItem(skipPrefix + c); continue; }
@@ -301,8 +301,8 @@ async function loadDashboard(){
     rooms.sort((a, b) => b.createdAt - a.createdAt);
     return rooms;
   }
-  const orgRooms = await fetchRooms(orgCodes, 'gv_org_');
-  const votedRooms = await fetchRooms(votedCodes, 'gv_voted_');
+  const orgRooms = await fetchRooms(orgCodes, 'gv_org_', null);
+  const votedRooms = await fetchRooms(votedCodes, 'gv_voted_', new Set(orgCodes));
   if (!orgRooms.length && !votedRooms.length) { box.classList.add('hidden'); return; }
   const row = (rm, origin) => {
     const lead = rm.state === 'open'
