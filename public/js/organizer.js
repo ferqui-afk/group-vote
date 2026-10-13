@@ -70,7 +70,7 @@ function render(){
         : 'No hay lugares cerca de este punto. Amplía el radio o busca por nombre.');
   $('results').innerHTML = lastResults.map(placeCard).join('') || '<p class="hint">Sin resultados.</p>';
   $('results').querySelectorAll('.pick-card').forEach(el => {
-    el.addEventListener('click', () => toggle(el.dataset.id));
+    el.addEventListener('click', () => { toggle(el.dataset.id); panToPick(el.dataset.id); });
   });
   $('results').querySelectorAll('[data-x]').forEach(b => {
     b.addEventListener('click', e => {
@@ -228,6 +228,13 @@ function pickIcon(sel){
   return L.divIcon({ className: '', html: `<div class="pick-pin${sel ? ' sel' : ''}">${sel ? '✓' : ''}</div>`,
     iconSize: [22, 22], iconAnchor: [11, 11] });
 }
+function panToPick(id){
+  if (!pickMap) return;
+  const m = pickPins.find(m => m._pid === id);
+  if (!m) return;
+  pickMap.setView(m.getLatLng(), Math.max(pickMap.getZoom(), 14), { animate: true });
+  setTimeout(() => m.openPopup(), 350);
+}
 function refreshPickPins(){
   pickPins.forEach(m => m.setIcon(pickIcon(selected.has(m._pid))));
 }
@@ -345,7 +352,8 @@ async function loadDashboard(){
         <div class="hint">${rm.totalVotes === 1 ? '1 voto' : rm.totalVotes + ' votos'} · ${lead}</div>
       </div>
       <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">Ver</a>
-      ${canDelete ? `<button class="btn-ghost btn-small" data-del="${esc(rm.code)}" title="Eliminar votación">🗑️</button>` : ''}
+      ${canDelete ? `<button class="btn-ghost btn-small" data-del="${esc(rm.code)}" title="Eliminar votación">🗑️</button>`
+                   : `<button class="btn-ghost btn-small" data-hide="${esc(rm.code)}" title="Quitar de mi lista">✕</button>`}
     </div>`;
   };
   const tagged = [
@@ -374,6 +382,12 @@ async function loadDashboard(){
         localStorage.removeItem('gv_org_' + code);
         loadDashboard();
       } catch(e){ alert('No se pudo eliminar: ' + e.message); b.disabled = false; }
+    });
+  });
+  list.querySelectorAll('[data-hide]').forEach(b => {
+    b.addEventListener('click', () => {
+      localStorage.removeItem('gv_voted_' + b.dataset.hide);
+      loadDashboard();
     });
   });
 }

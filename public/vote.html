@@ -26,6 +26,13 @@
     <p class="hint" style="margin:0 0 8px">✏️ Escribe tu nombre para votar:</p>
     <input id="nameInput" maxlength="40" placeholder="Tu nombre" autocomplete="name">
   </div>
+  <details class="card" id="qrCard">
+    <summary style="cursor:pointer"><strong>📱 QR para invitar</strong> <span class="hint">— que entren más a votar</span></summary>
+    <div class="qr-wrap center">
+      <img id="qrImgVote" alt="QR de la votación" style="margin-top:8px">
+      <p><button class="btn-ghost btn-small" id="copyVoteLink">Copiar enlace</button></p>
+    </div>
+  </details>
   <div id="carousel" class="carousel"></div>
   <div class="dots" id="dots"></div>
   <div class="card center hidden" id="orgCard">

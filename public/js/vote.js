@@ -12,8 +12,8 @@ let activeIdx = 0;
 function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function votedFlag(){ return localStorage.getItem('gv_voted_' + code) === '1'; }
 function setVotedFlag(){ localStorage.setItem('gv_voted_' + code, '1'); }
-function savedName(){ return localStorage.getItem('gv_name_' + code) || ''; }
-function saveName(n){ localStorage.setItem('gv_name_' + code, n); }
+function savedName(){ return localStorage.getItem('gv_name') || localStorage.getItem('gv_name_' + code) || ''; }
+function saveName(n){ localStorage.setItem('gv_name', n); localStorage.setItem('gv_name_' + code, n); }
 
 function statusLabel(state){
   if (state === 'open') return ['open', 'Abierta'];
@@ -106,7 +106,8 @@ function cardHtml(c, i, room){
   const mine = myVote === c.id;
   const maxVotes = Math.max(1, ...room.candidates.map(x => x.votes));
   const pct = Math.round(c.votes / maxVotes * 100);
-  const canVote = room.state === 'open' && !votedFlag();
+  const canVote = room.state === 'open' && !mine;
+  const votedAlready = room.state === 'open' && votedFlag();
   const named = (c.voters || []).filter(Boolean);
   const anon = c.votes - named.length;
   const voterLine = named.length || anon > 0
@@ -129,7 +130,7 @@ function cardHtml(c, i, room){
     <div class="result-line"><span><strong>${c.votes}</strong> ${c.votes === 1 ? 'voto' : 'votos'}</span></div>
     ${voterLine}
     <div class="bar"><div style="width:${pct}%"></div></div>
-    ${canVote ? `<button class="vote-btn" data-id="${esc(c.id)}">Votar por este lugar</button>` : ''}
+    ${canVote ? `<button class="vote-btn" data-id="${esc(c.id)}">${votedAlready ? 'Cambiar mi voto a este lugar' : 'Votar por este lugar'}</button>` : ''}
   </article>`;
 }
 
@@ -173,6 +174,23 @@ function render(room){
   const showName = room.state === 'open' && !votedFlag();
   nb.classList.toggle('hidden', !showName);
   if (showName && !$('nameInput').value) $('nameInput').value = savedName();
+
+  // Aviso de cambio de voto
+  let cv = $('changeHint');
+  if (room.state === 'open' && votedFlag() && myVote) {
+    const picked = room.candidates.find(c => c.id === myVote);
+    if (!cv) {
+      cv = document.createElement('p');
+      cv.id = 'changeHint';
+      cv.className = 'hint center';
+      nb.after(cv);
+    }
+    cv.innerHTML = `Votaste por <strong>${esc(picked ? picked.name : '')}</strong> · toca otro lugar para cambiar tu voto 🔄`;
+  } else if (cv) cv.remove();
+
+  // QR para invitar (siempre disponible mientras la sala exista)
+  const qi = $('qrImgVote');
+  if (qi && !qi.src) qi.src = '/api/rooms/' + code + '/qr.png';
 
   // Carrusel
   const car = $('carousel');
@@ -254,6 +272,11 @@ function renderBoard(room){
 $('viewCards').addEventListener('click', () => setView('cards'));
 $('viewBoard').addEventListener('click', () => setView('board'));
 $('viewCards').classList.add('active-view');
+$('copyVoteLink').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(location.href); $('copyVoteLink').textContent = '¡Copiado!'; }
+  catch(e){ prompt('Copia el enlace:', location.href); }
+  setTimeout(() => $('copyVoteLink').textContent = 'Copiar enlace', 1500);
+});
 
 function goTo(idx){
   const car = $('carousel');
