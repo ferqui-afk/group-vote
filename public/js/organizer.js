@@ -42,9 +42,10 @@ async function seedCarousel(){
   if (!pickCenter) pickCenter = { ...BA_AIRBNB };
   if ($('search').value.trim()) return;
   const on = $('openNowSw').checked ? '&openNow=1' : '';
+  const rg = selectedRegion ? '&region=' + encodeURIComponent(selectedRegion) : '';
   for (const m of [5, 25, 100]) {
     try {
-      const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${m}${on}`);
+      const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${m}${on}${rg}`);
       const data = await r.json();
       if (data.places && data.places.length) {
         lastResults = data.places;
@@ -61,7 +62,8 @@ async function seedCarousel(){
 async function doSearch(){
   const q = $('search').value.trim();
   if (!q && carouselSeeded) { render(); return; }
-  const r = await fetch('/api/places?q=' + encodeURIComponent(q));
+  const rg = selectedRegion ? '&region=' + encodeURIComponent(selectedRegion) : '';
+  const r = await fetch('/api/places?q=' + encodeURIComponent(q) + rg);
   const data = await r.json();
   lastResults = data.places;
   carouselSeeded = true;
@@ -254,9 +256,10 @@ async function loadNearby(fit){
   if (!pickMap || !pickCenter) return;
   const miles = parseFloat($('radiusSel').value);
   const on = $('openNowSw').checked ? '&openNow=1' : '';
+  const rg = selectedRegion ? '&region=' + encodeURIComponent(selectedRegion) : '';
   $('pickHint').textContent = 'Buscando lugares…';
   try {
-    const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${miles}${on}`);
+    const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${miles}${on}${rg}`);
     const data = await r.json();
     pickPins.forEach(m => pickMap.removeLayer(m)); pickPins = [];
     nearCache.clear();
@@ -354,21 +357,26 @@ document.addEventListener('DOMContentLoaded', () => {
   loadRegions();
 });
 
+let selectedRegion = ''; // id de la carpeta elegida; '' = todas
 async function loadRegions(){
   const sel = $('regionSel');
   if (!sel) return;
   try {
     const r = await fetch('/api/regions');
     const d = await r.json();
+    const byId = {};
+    d.regions.forEach(rg => byId[rg.id] = rg);
     sel.innerHTML = '<option value="">📁 Elegir carpeta…</option>' + d.regions.map(rg =>
-      `<option value="${rg.lat},${rg.lng}">${esc(rg.label)} (${rg.count})</option>`).join('');
+      `<option value="${esc(rg.id)}">${esc(rg.label)} (${rg.count})</option>`).join('');
     sel.addEventListener('change', () => {
-      if (!sel.value) return;
-      const [lat, lng] = sel.value.split(',').map(Number);
-      pickCenter = { lat, lng };
-      if (pickMap) pickMap.setView([pickCenter.lat, pickCenter.lng], 11, { animate: true });
+      selectedRegion = sel.value;
+      const rg = byId[selectedRegion];
+      if (rg) {
+        pickCenter = { lat: rg.lat, lng: rg.lng };
+        if (pickMap) pickMap.setView([pickCenter.lat, pickCenter.lng], 11, { animate: true });
+      }
       loadNearby(true);
-      seedCarousel();
+      if ($('search').value.trim()) doSearch(); else seedCarousel();
     });
   } catch(e) { /* sin conexión */ }
 }

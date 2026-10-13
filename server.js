@@ -220,8 +220,10 @@ app.get('/api/places/near', (req, res) => {
     return res.status(400).json({ error: 'Faltan coordenadas' });
   const miles = Math.min(200, Math.max(0.1, parseFloat(req.query.miles) || 10));
   const openNow = req.query.openNow === '1';
+  const region = String(req.query.region || '').trim();
+  const regionFilter = region ? 'AND region = ?' : '';
   const rows = db.prepare(`SELECT id, name, type, address, lat, lng, hours, hours_json, notes, image, neighborhood, reel_url
-    FROM places WHERE lat IS NOT NULL AND lng IS NOT NULL`).all();
+    FROM places WHERE lat IS NOT NULL AND lng IS NOT NULL ${regionFilter}`).all(...(region ? [region] : []));
   const R = 3958.8, toRad = d => d * Math.PI / 180;
   const out = [];
   for (const p of rows) {
@@ -346,18 +348,20 @@ app.post('/api/places/custom', (req, res) => {
 // ---- API ----
 app.get('/api/places', (req, res) => {
   const q = norm((req.query.q || '').trim());
-  let rows;
+  const region = String(req.query.region || '').trim();
+  const regionFilter = region ? 'AND region = ?' : '';
+  const params = [];
+  let sql;
   if (q) {
-    rows = db.prepare(
-      `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
-       WHERE search_text LIKE ? ORDER BY name LIMIT 60`)
-      .all('%' + q.replace(/[%_]/g, '') + '%');
+    sql = `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
+       WHERE search_text LIKE ? ${regionFilter} ORDER BY name LIMIT 60`;
+    params.push('%' + q.replace(/[%_]/g, '') + '%');
   } else {
-    rows = db.prepare(
-      `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
-       ORDER BY name LIMIT 60`).all();
+    sql = `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
+       WHERE 1=1 ${regionFilter} ORDER BY name LIMIT 60`;
   }
-  res.json({ places: rows });
+  if (region) params.push(region);
+  res.json({ places: db.prepare(sql).all(...params) });
 });
 
 // ---- Votaciones en curso (lista pública, se actualiza en vivo) ----
