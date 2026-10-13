@@ -85,13 +85,27 @@ function render(){
       e.stopPropagation();
       const card = b.closest('.pick-card');
       const xi = card.querySelector('.xinfo');
-      const open = xi.classList.toggle('hidden');
-      b.textContent = open ? 'ⓘ' : '✕';
-      if (!open) {
+      const willOpen = xi.classList.contains('hidden');
+      // Acordeón: al abrir una, las demás se cierran y sus videos se pausan (se quita el iframe).
+      $('results').querySelectorAll('.xinfo').forEach(other => {
+        if (other !== xi && !other.classList.contains('hidden')) {
+          other.classList.add('hidden');
+          const s = other.querySelector('.reel-slot');
+          if (s) s.innerHTML = '';
+          const ob = other.closest('.pick-card').querySelector('[data-x]');
+          if (ob) ob.textContent = 'ⓘ';
+        }
+      });
+      xi.classList.toggle('hidden', !willOpen);
+      b.textContent = willOpen ? '✕' : 'ⓘ';
+      if (willOpen) {
         const slot = xi.querySelector('.reel-slot');
         if (slot && !slot.querySelector('iframe')) {
           slot.innerHTML = `<div class="reel-wrap"><iframe src="https://www.instagram.com/reel/${esc(slot.dataset.reel)}/embed" loading="lazy" allowtransparency="true" title="Reel de Instagram"></iframe></div>`;
         }
+      } else {
+        const slot = xi.querySelector('.reel-slot');
+        if (slot) slot.innerHTML = '';
       }
     });
   });
@@ -275,7 +289,7 @@ async function loadNearby(fit){
       const m = L.marker([p.lat, p.lng], { icon: pickIcon(selected.has(p.id)) }).addTo(pickMap);
       m._pid = p.id;
       m.bindPopup(`<strong>${esc(p.name)}</strong><br>
-        <span style="color:#666;font-size:.85rem">${esc(p.type || '')}${p.type ? ' · ' : ''}${p.distance} mi</span><br>
+        <span style="color:var(--muted);font-size:.85rem">${esc(p.type || '')}${p.type ? ' · ' : ''}${p.distance} mi</span><br>
         <a href="${esc(gmapsUrl(p))}" target="_blank" rel="noopener" title="${t('maps_btn')}">${mapsLogo()}</a>
         <button data-pick="${esc(p.id)}" class="btn-ghost btn-small" style="margin-top:6px">${selected.has(p.id) ? t('remove') : t('add')}</button>`);
       pickPins.push(m);
@@ -329,12 +343,16 @@ function statusBadge(state){
   const [cls, label] = map[state] || map.expired;
   return `<span class="status ${cls}">${label}</span>`;
 }
+let lastActiveSig = '';
 async function loadActiveRooms(){
   const list = $('activeRoomsList');
   if (!list) return;
   try {
     const r = await fetch('/api/rooms/active');
     const d = await r.json();
+    const sig = JSON.stringify(d.rooms);
+    if (sig === lastActiveSig) return; // sin cambios: no tocar el DOM (sin parpadeo)
+    lastActiveSig = sig;
     if (!d.rooms.length) {
       list.innerHTML = '<p class="hint">' + t('active_empty') + '</p>';
       return;

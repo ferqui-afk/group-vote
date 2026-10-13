@@ -8,6 +8,9 @@ let map = null;
 let markers = [];
 let userLoc = null;
 let activeIdx = 0;
+let lastSig = '';
+let mapSig = '';
+let scrollEndT = null;
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function votedFlag(){ return localStorage.getItem('gv_voted_' + code) === '1'; }
@@ -108,7 +111,7 @@ function cardHtml(c, i, room){
     ? `<div class="voters">👤 ${esc(named.join(', '))}${named.length && anon > 0 ? ', ' : ''}${anon > 0 ? anon + ' ' + t('anon') + (anon > 1 && currentLang() === 'es' ? 's' : '') : ''}</div>` : '';
   const sc = reelShortcode(c.reel_url);
   const reel = sc
-    ? `<div class="reel-wrap"><iframe src="https://www.instagram.com/reel/${sc}/embed" loading="lazy" allowtransparency="true" title="Reel de Instagram"></iframe></div>
+    ? `<div class="reel-wrap reel-slot" data-reel="${esc(sc)}"></div>
        <div class="btn-row"><a class="btn-ghost" href="${esc(c.reel_url)}" target="_blank" rel="noopener">${t('reel_btn')}</a></div>`
     : '';
   return `<article class="ccard${i === activeIdx ? ' active' : ''}" data-i="${i}">
@@ -128,10 +131,34 @@ function cardHtml(c, i, room){
   </article>`;
 }
 
+function syncReels(){
+  // Solo la tarjeta activa tiene el iframe vivo: al salir de una tarjeta su video se pausa (se destruye el reproductor).
+  document.querySelectorAll('#carousel .ccard').forEach((cardEl, i) => {
+    const slot = cardEl.querySelector('.reel-slot');
+    if (!slot) return;
+    const has = !!slot.querySelector('iframe');
+    if (i === activeIdx && !has) {
+      slot.innerHTML = `<iframe src="https://www.instagram.com/reel/${esc(slot.dataset.reel)}/embed" loading="lazy" allowtransparency="true" title="Reel de Instagram"></iframe>`;
+    } else if (i !== activeIdx && has) {
+      slot.innerHTML = '';
+    }
+  });
+}
+
 function render(room){
   roomData = room;
   myVote = room.myVote;
   if (myVote) setVotedFlag();
+  // Si nada cambió desde el último render, no tocar el DOM: así ni el mapa ni las tarjetas parpadean cada 3 s.
+  const sig = JSON.stringify([view, room.state, room.myVote, room.totalVotes, room.winner && room.winner.id,
+    room.candidates.map(c => [c.id, c.votes, (c.voters || []).join('|')]),
+    votedFlag(), userLoc ? [Math.round(userLoc.lat * 1000), Math.round(userLoc.lng * 1000)] : null]);
+  if (sig === lastSig) {
+    clearInterval(pollTimer);
+    if (room.state === 'open') pollTimer = setInterval(load, 3000);
+    return;
+  }
+  lastSig = sig;
   $('roomTitle').textContent = '🗳️ ' + room.title;
   const [cls, label] = statusLabel(room.state);
   const st = $('roomStatus');
@@ -186,14 +213,20 @@ function render(room){
   const qi = $('qrImgVote');
   if (qi && !qi.src) qi.src = '/api/rooms/' + code + '/qr.png';
 
-  // Carrusel
+  // Carrusel (conserva la posición de scroll entre re-renders)
   const car = $('carousel');
+  const savedScroll = car.scrollLeft;
   car.innerHTML = room.candidates.map((c, i) => cardHtml(c, i, room)).join('');
   $('dots').innerHTML = room.candidates.map((_, i) =>
     `<span class="${i === activeIdx ? 'on' : ''}"></span>`).join('');
   car.querySelectorAll('.vote-btn').forEach(b =>
     b.addEventListener('click', () => vote(b.dataset.id)));
+  car.scrollLeft = savedScroll;
   car.onscroll = () => {
+    // Durante el swipe se ocultan los iframes (no flotan) y al terminar se sincronizan los reels.
+    car.classList.add('scrolling');
+    clearTimeout(scrollEndT);
+    scrollEndT = setTimeout(() => car.classList.remove('scrolling'), 150);
     const cards = [...car.children];
     if (!cards.length) return;
     const mid = car.scrollLeft + car.clientWidth / 2;
@@ -208,10 +241,16 @@ function render(room){
       cards.forEach((el, i) => el.classList.toggle('active', i === best));
       [...$('dots').children].forEach((el, i) => el.classList.toggle('on', i === best));
       highlightPin(best);
+      syncReels();
     }
   };
+  syncReels();
 
-  if (view !== 'board') initMap(room.candidates);
+  if (view !== 'board') {
+    const mSig = room.candidates.map(c => c.id).join(',');
+    if (!map || mSig !== mapSig) { initMap(room.candidates); mapSig = mSig; }
+    else highlightPin(activeIdx);
+  }
 
   // Organizador
   const orgToken = localStorage.getItem('gv_org_' + code);
@@ -282,6 +321,7 @@ function goTo(idx){
   [...$('dots').children].forEach((el, i) => el.classList.toggle('on', i === idx));
   car.scrollTo({ left: cards[idx].offsetLeft - (car.clientWidth - cards[idx].offsetWidth) / 2, behavior: 'smooth' });
   highlightPin(idx);
+  setTimeout(syncReels, 400);
 }
 async function load(){
   try {
