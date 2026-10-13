@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS places (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT DEFAULT '',
   address TEXT DEFAULT '', lat REAL, lng REAL, hours TEXT DEFAULT '',
   hours_json TEXT DEFAULT '',
+  region TEXT DEFAULT '',
   notes TEXT DEFAULT '', image TEXT, neighborhood TEXT DEFAULT '',
   search_text TEXT DEFAULT '', reel_url TEXT DEFAULT ''
 );
@@ -66,6 +67,9 @@ if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'search_
 }
 if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'hours_json')) {
   db.exec("ALTER TABLE places ADD COLUMN hours_json TEXT DEFAULT ''");
+}
+if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'region')) {
+  db.exec("ALTER TABLE places ADD COLUMN region TEXT DEFAULT ''");
 }
 if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'reel_url')) {
   db.exec("ALTER TABLE places ADD COLUMN reel_url TEXT DEFAULT ''");
@@ -151,8 +155,8 @@ function seedIfEmpty() {
   if (!fs.existsSync(seedPath)) { console.log('Sin semilla: data/places.json no existe. Corre: npm run import'); return 0; }
   const places = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
   const ins = db.prepare(`INSERT OR REPLACE INTO places
-    (id, name, type, address, lat, lng, hours, hours_json, notes, image, neighborhood, search_text, reel_url)
-    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @hours_json, @notes, @image, @neighborhood, @search_text, @reel_url)`);
+    (id, name, type, address, lat, lng, hours, hours_json, region, notes, image, neighborhood, search_text, reel_url)
+    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @hours_json, @region, @notes, @image, @neighborhood, @search_text, @reel_url)`);
   db.transaction(list => {
     for (const p of list) {
       if (!p.search_text) p.search_text = norm([p.name, p.type, p.address, p.notes, p.neighborhood].join(' '));
@@ -370,7 +374,23 @@ app.get('/api/rooms/active', (req, res) => {
   res.json({ rooms: out });
 });
 
-// ---- Crear sala ----
+// ---- Regiones (carpetas) con centro y cantidad ----
+const REGION_LABELS = {
+  argentina: 'Argentina', orlando: 'Orlando', pr: 'Puerto Rico',
+  spacecoast: 'Space Coast', miami: 'Miami', boston: 'Boston',
+  vegas: 'Las Vegas', newyork: 'Nueva York', colombia: 'Colombia',
+  cdmx: 'Ciudad de México', espana: 'España', tulum: 'Tulum',
+  losangeles: 'Los Ángeles', philly: 'Filadelfia', tampa: 'Tampa',
+  stpete: 'St. Pete'
+};
+app.get('/api/regions', (req, res) => {
+  const rows = db.prepare(`SELECT region, COUNT(*) AS count, AVG(lat) AS lat, AVG(lng) AS lng
+    FROM places WHERE region IS NOT NULL AND region != '' AND lat IS NOT NULL GROUP BY region ORDER BY count DESC`).all();
+  res.json({ regions: rows.map(r => ({
+    id: r.region, label: REGION_LABELS[r.region] || r.region,
+    count: r.count, lat: Math.round(r.lat * 10000) / 10000, lng: Math.round(r.lng * 10000) / 10000
+  })) });
+});
 app.post('/api/rooms', async (req, res) => {  const title = String(req.body.title || '').trim().slice(0, 80);
   const placeIds = Array.isArray(req.body.placeIds) ? [...new Set(req.body.placeIds.map(String))].slice(0, 12) : [];
   if (!title) return res.status(400).json({ error: 'Falta el título' });

@@ -339,7 +339,27 @@ async function loadActiveRooms(){
 document.addEventListener('DOMContentLoaded', () => {
   loadActiveRooms();
   setInterval(loadActiveRooms, 5000); // las nuevas aparecen solas
+  loadRegions();
 });
+
+async function loadRegions(){
+  const row = $('regionChips');
+  if (!row) return;
+  try {
+    const r = await fetch('/api/regions');
+    const d = await r.json();
+    row.innerHTML = d.regions.map(rg =>
+      `<button class="chip" data-lat="${rg.lat}" data-lng="${rg.lng}" data-name="${esc(rg.label)}">📁 ${esc(rg.label)} <span class="chip-n">${rg.count}</span></button>`).join('');
+    row.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
+      row.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      pickCenter = { lat: parseFloat(b.dataset.lat), lng: parseFloat(b.dataset.lng) };
+      if (pickMap) pickMap.setView([pickCenter.lat, pickCenter.lng], 11, { animate: true });
+      loadNearby(true);
+      seedCarousel();
+    }));
+  } catch(e) { /* sin conexión */ }
+}
 
 async function loadDashboard(){
   const orgCodes = myRoomCodes();
