@@ -9,10 +9,15 @@ function imgTag(p){
   return src ? `<img src="${esc(src)}" alt="" loading="lazy">`
              : `<img src="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect width="84" height="84" fill="#eee"/><text x="42" y="48" font-size="28" text-anchor="middle">🍽️</text></svg>')}" alt="">`;
 }
+function reelShortcode(url){
+  const m = /instagram\.com\/(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(url || '');
+  return m ? m[1] : null;
+}
 function placeCard(p){
   const sel = selected.has(p.id) ? ' selected' : '';
   const linkBadge = String(p.id).startsWith('custom-') ? '<span class="badge">🔗</span>' : '';
-  const hasX = (p.hours && p.hours.trim()) || (p.notes && p.notes.trim());
+  const sc = reelShortcode(p.reel_url);
+  const hasX = (p.hours && p.hours.trim()) || (p.notes && p.notes.trim()) || sc;
   return `<div class="pick-card${sel}" data-id="${esc(p.id)}">
     ${hasX ? `<button class="card-x" data-x="${esc(p.id)}" aria-label="ver horarios">ⓘ</button>` : ''}
     ${imgTag(p)}
@@ -24,6 +29,7 @@ function placeCard(p){
       ${hasX ? `<div class="xinfo hidden">
         ${p.hours ? `<div class="hours">🕐 ${esc(p.hours)}</div>` : ''}
         ${p.notes ? `<div class="notes">${esc(p.notes)}</div>` : ''}
+        ${sc ? `<div class="reel-slot" data-reel="${esc(sc)}"></div>` : ''}
       </div>` : ''}
     </div>
   </div>`;
@@ -66,7 +72,7 @@ function render(){
   $('countHint').textContent = q
     ? lastResults.length + ' resultados. Toca para elegir o quitar.'
     : (lastResults.length
-        ? lastResults.length + ' lugares cerca. Toca para elegir, ⓘ para ver horarios.'
+        ? lastResults.length + ' lugares cerca. Toca para elegir, ⓘ para ver horarios y reel.'
         : 'No hay lugares cerca de este punto. Amplía el radio o busca por nombre.');
   $('results').innerHTML = lastResults.map(placeCard).join('') || '<p class="hint">Sin resultados.</p>';
   $('results').querySelectorAll('.pick-card').forEach(el => {
@@ -79,6 +85,12 @@ function render(){
       const xi = card.querySelector('.xinfo');
       const open = xi.classList.toggle('hidden');
       b.textContent = open ? 'ⓘ' : '✕';
+      if (!open) {
+        const slot = xi.querySelector('.reel-slot');
+        if (slot && !slot.querySelector('iframe')) {
+          slot.innerHTML = `<div class="reel-wrap"><iframe src="https://www.instagram.com/reel/${esc(slot.dataset.reel)}/embed" loading="lazy" allowtransparency="true" title="Reel de Instagram"></iframe></div>`;
+        }
+      }
     });
   });
   updateBar();
