@@ -356,8 +356,22 @@ app.get('/api/places', (req, res) => {
   res.json({ places: rows });
 });
 
-app.post('/api/rooms', async (req, res) => {
-  const title = String(req.body.title || '').trim().slice(0, 80);
+// ---- Votaciones en curso (lista pública, se actualiza en vivo) ----
+app.get('/api/rooms/active', (req, res) => {
+  const now = Date.now();
+  const rooms = db.prepare(`SELECT code, title, created_at, expires_at, closed_at FROM rooms
+    WHERE expires_at > ? AND closed_at IS NULL ORDER BY created_at DESC`).all(now);
+  const out = rooms.map(r => ({
+    code: r.code, title: r.title,
+    createdAt: r.created_at, expiresAt: r.expires_at,
+    candidates: db.prepare('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?').get(r.code).c,
+    votes: db.prepare('SELECT COUNT(*) AS c FROM votes WHERE room_code=?').get(r.code).c
+  }));
+  res.json({ rooms: out });
+});
+
+// ---- Crear sala ----
+app.post('/api/rooms', async (req, res) => {  const title = String(req.body.title || '').trim().slice(0, 80);
   const placeIds = Array.isArray(req.body.placeIds) ? [...new Set(req.body.placeIds.map(String))].slice(0, 12) : [];
   if (!title) return res.status(400).json({ error: 'Falta el título' });
   if (placeIds.length < 2) return res.status(400).json({ error: 'Elige al menos 2 lugares' });

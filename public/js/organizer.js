@@ -313,6 +313,34 @@ function statusBadge(state){
   const [cls, label] = map[state] || map.expired;
   return `<span class="status ${cls}">${label}</span>`;
 }
+async function loadActiveRooms(){
+  const list = $('activeRoomsList');
+  if (!list) return;
+  try {
+    const r = await fetch('/api/rooms/active');
+    const d = await r.json();
+    if (!d.rooms.length) {
+      list.innerHTML = '<p class="hint">Sin votaciones en curso — crea la primera arriba 👆</p>';
+      return;
+    }
+    list.innerHTML = d.rooms.map(rm => {
+      const mins = Math.max(0, Math.round((rm.expiresAt - Date.now()) / 60000));
+      const hrs = Math.floor(mins / 60), mm = mins % 60;
+      const left = hrs ? `${hrs}h ${mm}m` : `${mm}m`;
+      return `<div class="dash-row">
+        <span style="flex:1;min-width:0"><strong>${esc(rm.title)}</strong>
+          <span class="hint"> · ${rm.candidates} lugares · ${rm.votes} ${rm.votes === 1 ? 'voto' : 'votos'} · expira en ${left}</span></span>
+        <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">Entrar →</a>
+      </div>`;
+    }).join('');
+  } catch(e) { /* sin conexión: se reintenta en el próximo ciclo */ }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadActiveRooms();
+  setInterval(loadActiveRooms, 5000); // las nuevas aparecen solas
+});
+
 async function loadDashboard(){
   const orgCodes = myRoomCodes();
   const votedCodes = [];
