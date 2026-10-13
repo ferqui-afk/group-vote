@@ -44,14 +44,43 @@ function distLabel(p){
   return km < 1 ? ` · 📍 a ${Math.round(km*1000)} m` : ` · 📍 a ${km.toFixed(1)} km`;
 }
 
+let meMarker = null;
+function showMyLocation(center){
+  if (!map || !navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    const ll = [pos.coords.latitude, pos.coords.longitude];
+    userLoc = { lat: ll[0], lng: ll[1] };
+    if (meMarker) map.removeLayer(meMarker);
+    meMarker = L.marker(ll, {
+      icon: L.divIcon({ className: '', html: '<div class="me-dot" style="width:16px;height:16px"></div>', iconSize: [16, 16], iconAnchor: [8, 8] }),
+      zIndexOffset: 1000
+    }).addTo(map).bindPopup('📍 Tú estás aquí');
+    if (center) map.setView(ll, 14);
+    if (roomData) render(roomData); // refresca distancias
+  }, () => alert('No se pudo obtener tu ubicación'), { timeout: 10000 });
+}
+
 function initMap(cands){
-  if (map) { map.remove(); map = null; markers = []; }
+  if (map) { map.remove(); map = null; markers = []; meMarker = null; }
   const withLoc = cands.filter(c => c.lat != null && c.lng != null);
   const el = $('voteMap');
   if (!withLoc.length) { el.classList.add('hidden'); return; }
   el.classList.remove('hidden');
   map = L.map('voteMap', { scrollWheelZoom: false }).setView([withLoc[0].lat, withLoc[0].lng], 13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  // Botón "mi ubicación"
+  const LocateCtrl = L.Control.extend({
+    options: { position: 'topright' },
+    onAdd: function(){
+      const btn = L.DomUtil.create('button', 'locate-btn');
+      btn.title = 'Ver mi ubicación';
+      btn.innerHTML = '📍';
+      btn.setAttribute('aria-label', 'Ver mi ubicación');
+      L.DomEvent.on(btn, 'click', e => { L.DomEvent.stop(e); showMyLocation(true); });
+      return btn;
+    }
+  });
+  map.addControl(new LocateCtrl());
   markers = cands.map((c, i) => {
     if (c.lat == null || c.lng == null) return null;
     const icon = L.divIcon({ className: '', html: `<div class="pin-num" data-i="${i}">${i+1}</div>`, iconSize: [26, 26], iconAnchor: [13, 13] });
@@ -120,6 +149,14 @@ function render(room){
     ? 'Cierra automáticamente: ' + d.toLocaleString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
     : '';
 
+  // Vista tablero vs tarjetas
+  const inBoard = view === 'board';
+  $('voteMap').classList.toggle('hidden', inBoard);
+  $('carousel').classList.toggle('hidden', inBoard);
+  $('dots').classList.toggle('hidden', inBoard);
+  $('boardView').classList.toggle('hidden', !inBoard);
+  if (inBoard) { renderBoard(room); }
+
   const wb = $('winnerBox');
   if (room.winner && room.state !== 'open') {
     const w = room.winner;
@@ -161,7 +198,7 @@ function render(room){
     }
   };
 
-  initMap(room.candidates);
+  if (view !== 'board') initMap(room.candidates);
 
   // Organizador
   const orgToken = localStorage.getItem('gv_org_' + code);
@@ -180,6 +217,53 @@ function render(room){
   if (room.state === 'open') pollTimer = setInterval(load, 3000);
 }
 
+// ---- Tablero en vivo ----
+let view = 'cards';
+function setView(v){
+  view = v;
+  $('viewCards').classList.toggle('active-view', v === 'cards');
+  $('viewBoard').classList.toggle('active-view', v === 'board');
+  if (v === 'cards' && map) setTimeout(() => map.invalidateSize(), 60);
+  if (roomData) render(roomData);
+}
+function renderBoard(room){
+  const cands = [...room.candidates].sort((a, b) => b.votes - a.votes || a.name.localeCompare(b.name));
+  const max = Math.max(1, ...cands.map(c => c.votes));
+  const medal = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span class="hint">${i + 1}.</span>`;
+  $('boardView').innerHTML =
+    `<div class="card"><h3 style="margin:0 0 4px">📊 Tablero en vivo</h3>
+     <p class="hint" style="margin:0">Toca un lugar para ver su tarjeta · se actualiza solo</p></div>` +
+    cands.map((c, i) => {
+      const pct = Math.round(c.votes / max * 100);
+      const voters = (c.voters || []).map(v => `<span class="voter-chip">${esc(v)}</span>`).join('');
+      return `<div class="board-row" data-id="${esc(c.id)}">
+        <div class="board-top"><div>${medal(i)} <strong>${esc(c.name)}</strong></div>
+        <div class="hint">${c.votes === 1 ? '1 voto' : c.votes + ' votos'}</div></div>
+        <div class="board-bar"><div class="board-fill" style="width:${pct}%"></div></div>
+        ${voters ? `<div class="board-voters">${voters}</div>` : '<div class="hint">Sin votos todavía</div>'}
+      </div>`;
+    }).join('');
+  $('boardView').querySelectorAll('.board-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const idx = room.candidates.findIndex(c => String(c.id) === row.dataset.id);
+      if (idx >= 0) { setView('cards'); setTimeout(() => goTo(idx), 120); }
+    });
+  });
+}
+$('viewCards').addEventListener('click', () => setView('cards'));
+$('viewBoard').addEventListener('click', () => setView('board'));
+$('viewCards').classList.add('active-view');
+
+function goTo(idx){
+  const car = $('carousel');
+  const cards = [...car.children];
+  if (!cards[idx]) return;
+  activeIdx = idx;
+  cards.forEach((el, i) => el.classList.toggle('active', i === idx));
+  [...$('dots').children].forEach((el, i) => el.classList.toggle('on', i === idx));
+  car.scrollTo({ left: cards[idx].offsetLeft - (car.clientWidth - cards[idx].offsetWidth) / 2, behavior: 'smooth' });
+  highlightPin(idx);
+}
 async function load(){
   try {
     const r = await fetch('/api/rooms/' + code);

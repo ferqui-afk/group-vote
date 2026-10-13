@@ -15,7 +15,12 @@
 </header>
 <main class="vote-main">
   <div id="winnerBox" class="hidden"></div>
+  <div class="view-toggle">
+    <button class="btn-ghost btn-small" id="viewCards">🗺️ Lugares</button>
+    <button class="btn-ghost btn-small" id="viewBoard">📊 Tablero</button>
+  </div>
   <div id="voteMap"></div>
+  <div id="boardView" class="hidden"></div>
   <div id="nameBox" class="card center hidden">
     <p class="hint" style="margin:0 0 8px">✏️ Escribe tu nombre para votar:</p>
     <input id="nameInput" maxlength="40" placeholder="Tu nombre" autocomplete="name">

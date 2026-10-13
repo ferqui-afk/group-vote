@@ -176,6 +176,102 @@ setInterval(() => {
   console.log('Limpieza: ' + old.length + ' salas vencidas eliminadas');
 }, 3600 * 1000);
 
+// ---- Resolver links de Instagram / Google Maps para añadir lugares ----
+function numOrNull(v) {
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : null;
+}
+async function resolveGmapsLink(rawUrl) {
+  let url = rawUrl;
+  for (let i = 0; i < 6; i++) {
+    const r = await fetch(url, { redirect: 'manual', headers: { 'User-Agent': 'Mozilla/5.0 (group-vote)' } });
+    const loc = r.headers.get('location');
+    if (r.status >= 300 && r.status < 400 && loc) url = new URL(loc, url).toString();
+    else break;
+  }
+  const final = url;
+  let name = '';
+  const pm = /\/place\/([^/@?]+)/.exec(final);
+  if (pm) name = decodeURIComponent(pm[1].replace(/\+/g, ' '));
+  let lat = null, lng = null;
+  const cm = /@(-?\d+\.\d+),(-?\d+\.\d+)/.exec(final);
+  if (cm) { lat = parseFloat(cm[1]); lng = parseFloat(cm[2]); }
+  if (lat == null) {
+    const dm = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/.exec(final);
+    if (dm) { lat = parseFloat(dm[1]); lng = parseFloat(dm[2]); }
+  }
+  try {
+    const u = new URL(final);
+    if (!name) name = u.searchParams.get('q') || u.searchParams.get('query') || '';
+  } catch {}
+  let address = '';
+  if (lat != null) {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2`, {
+        headers: { 'User-Agent': 'group-vote/1.0' }, signal: AbortSignal.timeout(8000)
+      });
+      if (r.ok) address = (await r.json()).display_name || '';
+    } catch {}
+  }
+  return { name, address, lat, lng, url: final };
+}
+
+app.post('/api/places/resolve', async (req, res) => {
+  const rawUrl = String(req.body.url || '').trim();
+  let u;
+  try { u = new URL(rawUrl); } catch { return res.status(400).json({ error: 'Link inválido' }); }
+  const host = u.hostname.toLowerCase();
+  if (!['http:', 'https:'].includes(u.protocol)) return res.status(400).json({ error: 'Link inválido' });
+  // Instagram: reel o post
+  if (host.includes('instagram.com')) {
+    const m = /\/(reel|p)\/([A-Za-z0-9_-]+)/.exec(u.pathname);
+    if (!m) return res.status(400).json({ error: 'Usa el link de un reel o post de Instagram' });
+    const reelUrl = `https://www.instagram.com/${m[1]}/${m[2]}/`;
+    let meta = {};
+    try {
+      const r = await fetch('https://www.instagram.com/oembed?url=' + encodeURIComponent(reelUrl),
+        { headers: { 'User-Agent': 'Mozilla/5.0 (group-vote)' }, signal: AbortSignal.timeout(8000) });
+      if (r.ok) meta = await r.json();
+    } catch {}
+    return res.json({ kind: 'instagram', reelUrl,
+      author: meta.author_name || '', caption: (meta.title || '').slice(0, 220),
+      thumbnail: meta.thumbnail_url || '' });
+  }
+  // Google Maps
+  if (host === 'maps.app.goo.gl' || host === 'goo.gl' ||
+      (host.includes('google.') && u.pathname.startsWith('/maps')) || host.includes('maps.google.')) {
+    try {
+      const g = await resolveGmapsLink(rawUrl);
+      if (!g.name && g.lat == null) return res.status(422).json({ error: 'No pude leer ese link de Google Maps' });
+      return res.json({ kind: 'gmaps', ...g });
+    } catch (e) {
+      return res.status(422).json({ error: 'No pude leer ese link de Google Maps' });
+    }
+  }
+  return res.status(400).json({ error: 'Link no reconocido (usa Instagram o Google Maps)' });
+});
+
+app.post('/api/places/custom', (req, res) => {
+  const name = String(req.body.name || '').trim().slice(0, 120);
+  if (!name) return res.status(400).json({ error: 'Falta el nombre del lugar' });
+  const id = 'custom-' + crypto.randomBytes(6).toString('hex');
+  const rec = {
+    id, name,
+    type: String(req.body.type || '').slice(0, 60),
+    address: String(req.body.address || '').slice(0, 250),
+    lat: numOrNull(req.body.lat), lng: numOrNull(req.body.lng),
+    hours: '', notes: String(req.body.notes || '').slice(0, 500),
+    image: '', neighborhood: '',
+    reel_url: String(req.body.reelUrl || '').slice(0, 300)
+  };
+  rec.search_text = norm([rec.name, rec.type, rec.address, rec.notes].join(' '));
+  db.prepare(`INSERT INTO places
+    (id, name, type, address, lat, lng, hours, notes, image, neighborhood, search_text, reel_url)
+    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @notes, @image, @neighborhood, @search_text, @reel_url)`)
+    .run(rec);
+  res.json({ place: rec });
+});
+
 // ---- API ----
 app.get('/api/places', (req, res) => {
   const q = norm((req.query.q || '').trim());

@@ -12,6 +12,11 @@
   <p>Elige lugares, crea la votación y comparte el QR</p>
 </header>
 <main>
+  <div class="card hidden" id="dashCard">
+    <h3 style="margin:0 0 8px">📊 Mis votaciones</h3>
+    <div id="dashList"></div>
+  </div>
+
   <div class="card">
     <label for="title"><strong>1. Título de la votación</strong></label>
     <input type="text" id="title" class="mt" placeholder="Ej. Cena del viernes" maxlength="80">
@@ -24,6 +29,16 @@
   </div>
 
   <div id="results"></div>
+
+  <div class="card">
+    <label for="linkInput"><strong>3. O añade un lugar con link</strong></label>
+    <p class="hint">Pega un link de Instagram (reel o post) o de Google Maps para agregarlo como opción.</p>
+    <div class="link-row">
+      <input type="url" id="linkInput" placeholder="https://www.instagram.com/reel/… o https://maps.app.goo.gl/…" autocomplete="off">
+      <button class="btn-ghost btn-small" id="linkBtn" style="white-space:nowrap">Añadir</button>
+    </div>
+    <div id="linkPreview" class="mt"></div>
+  </div>
 
   <div class="card center">
     <button class="btn" id="createBtn" disabled>Crear votación</button>

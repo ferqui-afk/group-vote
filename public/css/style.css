@@ -76,3 +76,20 @@ button{font-size:1rem;border:0;border-radius:10px;padding:12px 18px;cursor:point
 .dots span.on{background:var(--accent)}
 .pin-num{background:var(--accent);color:#fff;font-weight:800;border-radius:99px;text-align:center;line-height:26px;width:26px;height:26px;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);font-size:.8rem}
 .pin-num.active{background:var(--ink);width:32px;height:32px;line-height:32px;font-size:.95rem}
+.dash-row{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.dash-row:first-child{border-top:0;padding-top:0}
+.link-card{background:#faf7f0;border:1px dashed var(--line);border-radius:10px;padding:12px}
+.view-toggle{display:flex;gap:8px;justify-content:center;margin:2px 0 10px}
+.view-toggle .btn-small{border-radius:99px;padding:8px 16px}
+.active-view{background:#2b2b2b !important;color:#fff !important;border-color:#2b2b2b !important}
+.board-row{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.board-row:active{background:#f7f2e8}
+.board-top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.board-bar{height:8px;background:#eee7d6;border-radius:99px;margin:8px 0 6px;overflow:hidden}
+.board-fill{height:100%;background:linear-gradient(90deg,#c96f2e,#e8a54b);border-radius:99px;transition:width .6s ease}
+.board-voters{display:flex;flex-wrap:wrap;gap:6px}
+.voter-chip{background:#f1e9db;border-radius:99px;padding:3px 10px;font-size:.82rem;cursor:pointer;border:1px solid transparent}
+.voter-chip:active,.voter-chip.sel{background:#2b2b2b;color:#fff}
+.locate-btn{background:#fff;border:1px solid var(--line);border-radius:8px;width:34px;height:34px;font-size:1.1rem;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center}
+.locate-btn:active{background:#f1e9db}
+.me-dot{background:#1d4ed8;border:3px solid #fff;border-radius:99px;box-shadow:0 0 0 2px rgba(29,78,216,.4), 0 1px 4px rgba(0,0,0,.35)}
