@@ -122,7 +122,8 @@ button{font-size:1rem;border:0;border-radius:10px;padding:12px 18px;cursor:point
 .switch input:checked + .slider{background:#2e7d32}
 .switch input:checked + .slider:before{transform:translateX(18px)}
 .me-dot{background:#1d4ed8;border:3px solid #fff;border-radius:99px;box-shadow:0 0 0 2px rgba(29,78,216,.4), 0 1px 4px rgba(0,0,0,.35)}
-.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
-.chip{border:1px solid #ddd;background:#f7f7f7;border-radius:99px;padding:6px 12px;cursor:pointer;font-size:.85rem}
-.chip.active{background:#1a73e8;color:#fff;border-color:#1a73e8}
+.chip-row{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:4px;margin:8px 0;padding:4px;background:#f0f0f0;border-radius:99px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.chip-row::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:0;background:transparent;border-radius:99px;padding:8px 14px;cursor:pointer;font-size:.85rem;white-space:nowrap}
+.chip.active{background:#1a73e8;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
 .chip-n{opacity:.7;font-size:.8em}
