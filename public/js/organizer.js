@@ -115,7 +115,12 @@ $('createBtn').addEventListener('click', async () => {
     $('openVote').href = data.voteUrl;
     $('doneCard').classList.remove('hidden');
     $('doneCard').scrollIntoView({behavior:'smooth'});
-  } catch(e){ alert('No se pudo crear: ' + e.message); }
+  } catch(e){
+    const msg = (e instanceof TypeError || /failed|network|load/i.test(e.message))
+      ? 'No se pudo conectar con el servidor. El enlace puede haber vencido, pide uno nuevo.'
+      : e.message;
+    alert('No se pudo crear: ' + msg);
+  }
   $('createBtn').disabled = false;
   $('createBtn').textContent = 'Crear votación';
 });
