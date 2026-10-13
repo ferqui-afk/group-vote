@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Votación en grupo 🗳️</title>
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>🗳️ Votación en grupo</h1>
+  <p>Elige lugares, crea la votación y comparte el QR</p>
+</header>
+<main>
+  <div class="card">
+    <label for="title"><strong>1. Título de la votación</strong></label>
+    <input type="text" id="title" class="mt" placeholder="Ej. Cena del viernes" maxlength="80">
+  </div>
+
+  <div class="card">
+    <label for="search"><strong>2. Busca y elige al menos 2 lugares</strong></label>
+    <input type="search" id="search" class="mt" placeholder="Buscar por nombre, tipo, barrio…" autocomplete="off">
+    <p class="hint" id="countHint">Escribe para buscar entre los lugares del mapa.</p>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="card center">
+    <button class="btn" id="createBtn" disabled>Crear votación</button>
+    <p class="hint">Selecciona 2 o más lugares y ponle título.</p>
+  </div>
+
+  <div class="card hidden" id="doneCard">
+    <h3 style="margin-top:0">¡Votación creada! 🎉</h3>
+    <div class="qr-wrap">
+      <img id="qrImg" alt="Código QR de la votación">
+      <p><a id="qrDl" class="btn-ghost btn-small" style="text-decoration:none;display:inline-block" download>Descargar QR</a></p>
+    </div>
+    <label for="voteLink"><strong>Enlace para votar:</strong></label>
+    <div class="link-row">
+      <input type="text" id="voteLink" readonly>
+      <button class="btn-ghost btn-small" id="copyBtn">Copiar</button>
+    </div>
+    <p class="hint">Comparte el enlace o el QR con tus amigos. La votación dura 24 horas. Puedes cerrarla antes desde la página de votación.</p>
+    <p><a id="openVote" class="btn" style="display:block;text-align:center;text-decoration:none">Abrir la votación</a></p>
+  </div>
+</main>
+
+<div id="selectedBar">
+  <div class="chips" id="chips"></div>
+  <button class="btn" id="goCreate">Continuar con <span id="selCount">0</span> elegidos</button>
+</div>
+
+<script src="/js/organizer.js"></script>
+</body>
+</html>
