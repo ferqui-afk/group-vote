@@ -12,30 +12,57 @@ function imgTag(p){
 function placeCard(p){
   const sel = selected.has(p.id) ? ' selected' : '';
   const linkBadge = String(p.id).startsWith('custom-') ? '<span class="badge">🔗</span>' : '';
-  return `<div class="card place selectable${sel}" data-id="${esc(p.id)}">
+  return `<div class="pick-card${sel}" data-id="${esc(p.id)}">
     ${imgTag(p)}
     <div class="info">
-      <div class="name">${esc(p.name)}${selected.has(p.id)?'<span class="badge">✓</span>':''}${linkBadge}</div>
-      ${p.type?`<div class="type">${esc(p.type)}</div>`:''}
-      ${p.address?`<div class="addr">📍 ${esc(p.address)}</div>`:''}
-      ${p.hours?`<div class="hours">🕐 ${esc(p.hours)}</div>`:''}
-      ${p.notes?`<div class="notes">${esc(p.notes.slice(0,140))}${p.notes.length>140?'…':''}</div>`:''}
+      <div class="name">${esc(p.name)}${selected.has(p.id) ? '<span class="badge">✓</span>' : ''}${linkBadge}</div>
+      ${p.type ? `<div class="type">${esc(p.type)}</div>` : ''}
+      ${p.distance != null ? `<div class="dist">📍 ${p.distance} mi</div>` : ''}
+      ${p.address ? `<div class="addr">${esc(p.address.slice(0, 60))}${p.address.length > 60 ? '…' : ''}</div>` : ''}
     </div>
   </div>`;
 }
 
 let lastResults = [];
+let carouselSeeded = false;
+async function seedCarousel(){
+  // Empieza con los 5 lugares más cercanos al centro del mapa
+  if (!pickCenter) pickCenter = { ...BA_AIRBNB };
+  if ($('search').value.trim()) return;
+  for (const m of [5, 25, 100]) {
+    try {
+      const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${m}`);
+      const data = await r.json();
+      if (data.places && data.places.length) {
+        lastResults = data.places.slice(0, 5);
+        carouselSeeded = true;
+        render();
+        return;
+      }
+    } catch(e){}
+  }
+  lastResults = [];
+  carouselSeeded = true;
+  render();
+}
 async function doSearch(){
   const q = $('search').value.trim();
+  if (!q && carouselSeeded) { render(); return; }
   const r = await fetch('/api/places?q=' + encodeURIComponent(q));
   const data = await r.json();
   lastResults = data.places;
+  carouselSeeded = true;
   render();
 }
 function render(){
-  $('countHint').textContent = lastResults.length + ' lugares. Toca para elegir o quitar.';
+  const q = $('search').value.trim();
+  $('countHint').textContent = q
+    ? lastResults.length + ' resultados. Toca para elegir o quitar.'
+    : (lastResults.length
+        ? 'Empieza con los más cercanos. Toca para elegir o busca más.'
+        : 'No hay lugares cerca de este punto. Amplía el radio o busca por nombre.');
   $('results').innerHTML = lastResults.map(placeCard).join('') || '<p class="hint">Sin resultados.</p>';
-  $('results').querySelectorAll('.selectable').forEach(el => {
+  $('results').querySelectorAll('.pick-card').forEach(el => {
     el.addEventListener('click', () => toggle(el.dataset.id));
   });
   updateBar();
@@ -229,17 +256,11 @@ function initPickMap(){
     navigator.geolocation.getCurrentPosition(pos => {
       pickCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       loadNearby(true);
+      seedCarousel();
       $('geoBtn').disabled = false;
     }, () => { alert('No se pudo obtener tu ubicación'); $('geoBtn').disabled = false; }, { timeout: 10000 });
   });
   loadNearby(true);
-  // Intento silencioso: si ya dio permiso antes, centrar en él
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      pickCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      loadNearby(true);
-    }, () => {}, { timeout: 6000, maximumAge: 300000 });
-  }
 }
 
 // ---- Dashboard de mis votaciones ----
@@ -283,7 +304,7 @@ async function loadDashboard(){
   const orgRooms = await fetchRooms(orgCodes, 'gv_org_');
   const votedRooms = await fetchRooms(votedCodes, 'gv_voted_');
   if (!orgRooms.length && !votedRooms.length) { box.classList.add('hidden'); return; }
-  const row = rm => {
+  const row = (rm, origin) => {
     const lead = rm.state === 'open'
       ? (rm.candidates[0] && rm.candidates[0].votes > 0
           ? `👑 Va ganando: <strong>${esc(rm.candidates[0].name)}</strong> (${rm.candidates[0].votes})`
@@ -291,17 +312,25 @@ async function loadDashboard(){
       : (rm.winner ? `🏆 Ganó: <strong>${esc(rm.winner.name)}</strong>` : 'Sin ganador');
     return `<div class="dash-row">
       <div style="flex:1;min-width:0">
-        <div><strong>${esc(rm.title)}</strong> ${statusBadge(rm.state)}</div>
+        <div><strong>${esc(rm.title)}</strong> ${statusBadge(rm.state)} <span class="hint">· ${origin}</span></div>
         <div class="hint">${rm.totalVotes === 1 ? '1 voto' : rm.totalVotes + ' votos'} · ${lead}</div>
       </div>
       <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">Ver</a>
     </div>`;
   };
+  const tagged = [
+    ...orgRooms.map(r => ({ r, origin: 'creada por ti' })),
+    ...votedRooms.map(r => ({ r, origin: 'votaste' }))
+  ];
+  const actives = tagged.filter(x => x.r.state === 'open');
+  const history = tagged.filter(x => x.r.state !== 'open');
   list.innerHTML =
-    (orgRooms.length ? `<p class="hint" style="margin:0 0 4px"><strong>Creadas por ti</strong></p>` + orgRooms.map(row).join('') : '') +
-    (votedRooms.length ? `<p class="hint" style="margin:10px 0 4px"><strong>Donde votaste</strong></p>` + votedRooms.map(row).join('') : '');
+    (actives.length ? `<p class="hint" style="margin:0 0 4px"><strong>🟢 Votaciones activas</strong></p>` +
+      actives.map(x => row(x.r, x.origin)).join('') : '') +
+    (history.length ? `<p class="hint" style="margin:12px 0 4px"><strong>📜 Historial</strong></p>` +
+      history.map(x => row(x.r, x.origin)).join('') : '');
 }
-doSearch();
+initPickMap();
+seedCarousel();
 loadDashboard();
 setInterval(loadDashboard, 15000);
-initPickMap();
