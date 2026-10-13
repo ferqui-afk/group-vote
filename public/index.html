@@ -10,99 +10,101 @@
 </head>
 <body>
 <header class="top">
-  <h1>🗳️ Votación en grupo</h1>
-  <p>Elige lugares, crea la votación y comparte el QR</p>
+  <h1 data-i18n="app_title">🗳️ Votación en grupo</h1>
+  <p data-i18n="app_sub">Elige lugares, crea la votación y comparte el QR</p>
+  <div class="prefs"><button id="themeBtn" aria-label="Cambiar tema">🌙</button><button id="langBtn" aria-label="Cambiar idioma">EN</button></div>
 </header>
 <main>
   <div class="card hidden" id="dashCard">
-    <h3 style="margin:0 0 8px">📊 Mis votaciones</h3>
+    <h3 style="margin:0 0 8px" data-i18n="dash_title">📊 Mis votaciones</h3>
     <div id="dashList"></div>
   </div>
 
   <div class="card" id="activeRoomsCard">
-    <h2 style="margin:0 0 4px">🗳️ Votaciones en curso</h2>
-    <p class="hint" style="margin:0 0 8px">Las votaciones nuevas aparecen aquí solas — no hay que reenviar el link.</p>
-    <div id="activeRoomsList"><p class="hint">Buscando votaciones…</p></div>
+    <h2 style="margin:0 0 4px" data-i18n="active_title">🗳️ Votaciones en curso</h2>
+    <p class="hint" style="margin:0 0 8px" data-i18n="active_sub">Las votaciones nuevas aparecen aquí solas — no hay que reenviar el link.</p>
+    <div id="activeRoomsList"><p class="hint" data-i18n="active_loading">Buscando votaciones…</p></div>
   </div>
 
   <div class="card">
-    <label for="title"><strong>1. Título de la votación</strong></label>
-    <input type="text" id="title" class="mt" placeholder="Ej. Cena del viernes" maxlength="80">
+    <label for="title"><strong data-i18n="step1">1. Título de la votación</strong></label>
+    <input type="text" id="title" class="mt" placeholder="Ej. Cena del viernes" data-i18n-ph="title_ph" maxlength="80">
   </div>
 
   <div class="card" id="pickMapCard">
-    <strong>🗺️ Elige por mapa</strong>
-    <p class="hint">Filtra por distancia y toca los pines para añadir lugares.</p>
+    <strong data-i18n="map_title">🗺️ Elige por mapa</strong>
+    <p class="hint" data-i18n="map_sub">Filtra por distancia y toca los pines para añadir lugares.</p>
     <div class="map-ctl">
-      <label class="hint" for="regionSel">📁 Carpeta:</label>
+      <label class="hint" for="regionSel" data-i18n="folder">📁 Carpeta:</label>
       <select id="regionSel"><option value="">Elegir carpeta…</option></select>
     </div>
     <div class="map-ctl">
-      <button class="btn-ghost btn-small" id="geoBtn">📍 Mi ubicación</button>
-      <button class="btn-ghost btn-small" id="expandMapBtn">⛶ Expandir</button>
+      <button class="btn-ghost btn-small" id="geoBtn" data-i18n="my_loc">📍 Mi ubicación</button>
+      <button class="btn-ghost btn-small" id="expandMapBtn" data-i18n="expand">⛶ Expandir</button>
       <label class="switch-wrap" title="Solo lugares abiertos ahora">
         <span class="switch"><input type="checkbox" id="openNowSw"><span class="slider"></span></span>
-        <span class="hint">Abiertos ahora</span>
+        <span class="hint" data-i18n="open_now">Abiertos ahora</span>
       </label>
-      <label class="hint" for="radiusSel">Radio:</label>
+      <label class="hint" for="radiusSel" data-i18n="radius">Radio:</label>
       <select id="radiusSel">
-        <option value="1">1 milla</option>
-        <option value="2">2 millas</option>
-        <option value="5" selected>5 millas</option>
-        <option value="10">10 millas</option>
-        <option value="25">25 millas</option>
-        <option value="50">50 millas</option>
-        <option value="100">100 millas</option>
+        <option value="1" data-i18n="mile1">1 milla</option>
+        <option value="2" data-i18n="mile2">2 millas</option>
+        <option value="5" selected data-i18n="mile5">5 millas</option>
+        <option value="10" data-i18n="mile10">10 millas</option>
+        <option value="25" data-i18n="mile25">25 millas</option>
+        <option value="50" data-i18n="mile50">50 millas</option>
+        <option value="100" data-i18n="mile100">100 millas</option>
       </select>
     </div>
     <div id="pickMap"></div>
-    <p class="hint" id="pickHint">Cargando lugares…</p>
+    <p class="hint" id="pickHint" data-i18n="map_loading">Cargando lugares…</p>
   </div>
 
   <div class="card">
-    <label for="search"><strong>2. O busca y elige al menos 2 lugares</strong></label>
-    <input type="search" id="search" class="mt" placeholder="Buscar por nombre, tipo, barrio…" autocomplete="off">
-    <p class="hint" id="countHint">Escribe para buscar entre los lugares del mapa.</p>
+    <label for="search"><strong data-i18n="step2">2. O busca y elige al menos 2 lugares</strong></label>
+    <input type="search" id="search" class="mt" placeholder="Buscar por nombre, tipo, barrio…" data-i18n-ph="search_ph" autocomplete="off">
+    <p class="hint" id="countHint" data-i18n="search_hint">Escribe para buscar entre los lugares del mapa.</p>
   </div>
 
   <div id="results"></div>
 
   <div class="card">
-    <label for="linkInput"><strong>3. O añade un lugar con link</strong></label>
-    <p class="hint">Pega un link de Instagram (reel o post) o de Google Maps para agregarlo como opción.</p>
+    <label for="linkInput"><strong data-i18n="add_link_title">3. O añade un lugar con link</strong></label>
+    <p class="hint" data-i18n="link_hint">Pega un link de Instagram (reel o post) o de Google Maps para agregarlo como opción.</p>
     <div class="link-row">
       <input type="url" id="linkInput" placeholder="https://www.instagram.com/reel/… o https://maps.app.goo.gl/…" autocomplete="off">
-      <button class="btn-ghost btn-small" id="linkBtn" style="white-space:nowrap">Añadir</button>
+      <button class="btn-ghost btn-small" id="linkBtn" style="white-space:nowrap" data-i18n="add_short">Añadir</button>
     </div>
     <div id="linkPreview" class="mt"></div>
   </div>
 
   <div class="card center">
-    <button class="btn" id="createBtn" disabled>Crear votación</button>
-    <p class="hint">Selecciona 2 o más lugares y ponle título.</p>
+    <button class="btn" id="createBtn" disabled data-i18n="create_btn">Crear votación</button>
+    <p class="hint" data-i18n="create_hint">Selecciona 2 o más lugares y ponle título.</p>
   </div>
 
   <div class="card hidden" id="doneCard">
-    <h3 style="margin-top:0">¡Votación creada! 🎉</h3>
+    <h3 style="margin-top:0" data-i18n="created_title">¡Votación creada! 🎉</h3>
     <div class="qr-wrap">
       <img id="qrImg" alt="Código QR de la votación">
-      <p><a id="qrDl" class="btn-ghost btn-small" style="text-decoration:none;display:inline-block" download>Descargar QR</a></p>
+      <p><a id="qrDl" class="btn-ghost btn-small" style="text-decoration:none;display:inline-block" download data-i18n="download_qr">Descargar QR</a></p>
     </div>
-    <label for="voteLink"><strong>Enlace para votar:</strong></label>
+    <label for="voteLink"><strong data-i18n="vote_link_label">Enlace para votar:</strong></label>
     <div class="link-row">
       <input type="text" id="voteLink" readonly>
-      <button class="btn-ghost btn-small" id="copyBtn">Copiar</button>
+      <button class="btn-ghost btn-small" id="copyBtn" data-i18n="copy">Copiar</button>
     </div>
-    <p class="hint">Comparte el enlace o el QR con tus amigos. La votación dura 24 horas. Puedes cerrarla antes desde la página de votación.</p>
-    <p><a id="openVote" class="btn" style="display:block;text-align:center;text-decoration:none">Abrir la votación</a></p>
+    <p class="hint" data-i18n="share_hint">Comparte el enlace o el QR con tus amigos. La votación dura 24 horas. Puedes cerrarla antes desde la página de votación.</p>
+    <p><a id="openVote" class="btn" style="display:block;text-align:center;text-decoration:none" data-i18n="open_vote">Abrir la votación</a></p>
   </div>
 </main>
 
 <div id="selectedBar">
   <div class="chips" id="chips"></div>
-  <button class="btn" id="goCreate">Continuar con <span id="selCount">0</span> elegidos</button>
+  <button class="btn" id="goCreate"><span data-i18n="go_continue">Continuar con</span> <span id="selCount">0</span> <span data-i18n="picked">elegidos</span></button>
 </div>
 
+<script src="/js/prefs.js"></script>
 <script src="/js/organizer.js"></script>
 </body>
 </html>

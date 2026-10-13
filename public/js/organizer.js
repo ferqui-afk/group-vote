@@ -25,7 +25,7 @@ function placeCard(p){
       <div class="name">${esc(p.name)}${selected.has(p.id) ? '<span class="badge">✓</span>' : ''}${linkBadge}</div>
       ${p.type ? `<div class="type">${esc(p.type)}</div>` : ''}
       ${p.distance != null ? `<div class="dist">📍 ${p.distance} mi</div>` : ''}
-      ${p.address ? `<div class="addr">${esc(p.address.slice(0, 60))}${p.address.length > 60 ? '…' : ''}</div>` : ''}
+      <div class="addr">${p.address ? esc(p.address.slice(0, 60)) + (p.address.length > 60 ? '…' : '') + ' ' : ''}<a class="maps-link" href="${esc(gmapsUrl(p))}" target="_blank" rel="noopener" title="${t('maps_btn')}" onclick="event.stopPropagation()">${mapsLogo()}</a></div>
       ${hasX ? `<div class="xinfo hidden">
         ${p.hours ? `<div class="hours">🕐 ${esc(p.hours)}</div>` : ''}
         ${p.notes ? `<div class="notes">${esc(p.notes)}</div>` : ''}
@@ -72,11 +72,11 @@ async function doSearch(){
 function render(){
   const q = $('search').value.trim();
   $('countHint').textContent = q
-    ? lastResults.length + ' resultados. Toca para elegir o quitar.'
+    ? lastResults.length + ' ' + t('search_results')
     : (lastResults.length
-        ? lastResults.length + ' lugares cerca. Toca para elegir, ⓘ para ver horarios y reel.'
-        : 'No hay lugares cerca de este punto. Amplía el radio o busca por nombre.');
-  $('results').innerHTML = lastResults.map(placeCard).join('') || '<p class="hint">Sin resultados.</p>';
+        ? lastResults.length + ' ' + t('near_hint')
+        : t('no_near'));
+  $('results').innerHTML = lastResults.map(placeCard).join('') || '<p class="hint">' + t('no_results') + '</p>';
   $('results').querySelectorAll('.pick-card').forEach(el => {
     el.addEventListener('click', () => { toggle(el.dataset.id); panToPick(el.dataset.id); });
   });
@@ -101,7 +101,7 @@ function toggle(id){
   const p = lastResults.find(x => x.id === id) || nearCache.get(id);
   if (!p) return;
   if (selected.has(id)) selected.delete(id);
-  else { if (selected.size >= 12) { alert('Máximo 12 lugares por votación'); return; } selected.set(id, p); }
+  else { if (selected.size >= 12) { alert(t('max12')); return; } selected.set(id, p); }
   render();
   refreshPickPins();
 }
@@ -129,7 +129,7 @@ $('createBtn').addEventListener('click', async () => {
   const title = $('title').value.trim();
   if (selected.size < 2 || !title) return;
   $('createBtn').disabled = true;
-  $('createBtn').textContent = 'Creando…';
+  $('createBtn').textContent = t('creating');
   try {
     const r = await fetch('/api/rooms', {
       method:'POST', headers:{'Content-Type':'application/json'},
@@ -147,26 +147,26 @@ $('createBtn').addEventListener('click', async () => {
     $('doneCard').scrollIntoView({behavior:'smooth'});
   } catch(e){
     const msg = (e instanceof TypeError || /failed|network|load/i.test(e.message))
-      ? 'No se pudo conectar con el servidor. El enlace puede haber vencido, pide uno nuevo.'
+      ? t('server_fail')
       : e.message;
-    alert('No se pudo crear: ' + msg);
+    alert(t('create_fail') + msg);
   }
   $('createBtn').disabled = false;
-  $('createBtn').textContent = 'Crear votación';
+  $('createBtn').textContent = t('create_btn');
 });
 $('copyBtn').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText($('voteLink').value); $('copyBtn').textContent = '¡Copiado!'; }
+  try { await navigator.clipboard.writeText($('voteLink').value); $('copyBtn').textContent = t('copied'); }
   catch(e){ $('voteLink').select(); document.execCommand('copy'); }
-  setTimeout(() => $('copyBtn').textContent = 'Copiar', 1500);
+  setTimeout(() => $('copyBtn').textContent = t('copy'), 1500);
 });
 
 // ---- Añadir lugar con link de Instagram / Google Maps ----
 let pendingLink = null;
 $('linkBtn').addEventListener('click', async () => {
   const url = $('linkInput').value.trim();
-  if (!url) { alert('Pega un link primero'); return; }
+  if (!url) { alert(t('link_paste_first')); return; }
   const prev = $('linkPreview');
-  prev.innerHTML = '<p class="hint">Leyendo el link…</p>';
+  prev.innerHTML = '<p class="hint">' + t('link_reading') + '</p>';
   $('linkBtn').disabled = true;
   try {
     const r = await fetch('/api/places/resolve', {
@@ -178,22 +178,22 @@ $('linkBtn').addEventListener('click', async () => {
     pendingLink = data;
     if (data.kind === 'instagram') {
       prev.innerHTML = `<div class="link-card">
-        <div><strong>🎬 Reel de Instagram</strong></div>
-        ${data.author ? `<div class="hint">por @${esc(data.author)}</div>` : ''}
+        <div><strong>${t('reel_of_ig')}</strong></div>
+        ${data.author ? `<div class="hint">${t('by_author')} @${esc(data.author)}</div>` : ''}
         ${data.caption ? `<div class="hint">${esc(data.caption)}</div>` : ''}
-        <label class="mt" for="linkName"><strong>Nombre del lugar</strong></label>
-        <input type="text" id="linkName" class="mt" placeholder="Ej. La Choppería" maxlength="120">
-        <label class="mt" for="linkType"><strong>Tipo (opcional)</strong></label>
-        <input type="text" id="linkType" placeholder="Ej. Bar" maxlength="60">
-        <button class="btn mt" id="linkConfirm">Añadir a la votación</button>
+        <label class="mt" for="linkName"><strong>${t('place_name_label')}</strong></label>
+        <input type="text" id="linkName" class="mt" placeholder="${esc(t('name_example'))}" maxlength="120">
+        <label class="mt" for="linkType"><strong>${t('type_optional')}</strong></label>
+        <input type="text" id="linkType" placeholder="${esc(t('type_example'))}" maxlength="60">
+        <button class="btn mt" id="linkConfirm">${t('add_btn')}</button>
       </div>`;
     } else {
       prev.innerHTML = `<div class="link-card">
-        <div><strong>📍 Google Maps</strong></div>
-        <label class="mt" for="linkName"><strong>Nombre del lugar</strong></label>
+        <div><strong>${t('maps_gmaps_label')}</strong></div>
+        <label class="mt" for="linkName"><strong>${t('place_name_label')}</strong></label>
         <input type="text" id="linkName" class="mt" value="${esc(data.name || '')}" maxlength="120">
         ${data.address ? `<div class="hint">${esc(data.address.slice(0, 140))}</div>` : ''}
-        <button class="btn mt" id="linkConfirm">Añadir a la votación</button>
+        <button class="btn mt" id="linkConfirm">${t('add_btn')}</button>
       </div>`;
     }
     $('linkConfirm').addEventListener('click', confirmLinkPlace);
@@ -205,10 +205,10 @@ async function confirmLinkPlace(){
   const d = pendingLink;
   if (!d) return;
   const name = ($('linkName') || {}).value ? $('linkName').value.trim() : (d.name || '');
-  if (!name) { alert('Ponle un nombre al lugar'); return; }
-  if (selected.size >= 12) { alert('Máximo 12 lugares por votación'); return; }
+  if (!name) { alert(t('link_name_it')); return; }
+  if (selected.size >= 12) { alert(t('max12')); return; }
   const btn = $('linkConfirm');
-  btn.disabled = true; btn.textContent = 'Añadiendo…';
+  btn.disabled = true; btn.textContent = t('link_adding');
   try {
     const body = { name,
       address: d.kind === 'gmaps' ? (d.address || '') : '',
@@ -227,11 +227,11 @@ async function confirmLinkPlace(){
     selected.set(data.place.id, data.place);
     lastResults.unshift(data.place);
     render();
-    $('linkPreview').innerHTML = `<p class="hint">✅ <strong>${esc(data.place.name)}</strong> añadido. Puedes seguir buscando o crear la votación.</p>`;
+    $('linkPreview').innerHTML = `<p class="hint">✅ <strong>${esc(data.place.name)}</strong> ${t('added_msg')}</p>`;
     $('linkInput').value = '';
     pendingLink = null;
-  } catch (e) { alert('No se pudo añadir: ' + e.message); }
-  btn.disabled = false; btn.textContent = 'Añadir a la votación';
+  } catch (e) { alert(t('link_add_fail') + e.message); }
+  btn.disabled = false; btn.textContent = t('add_btn');
 }
 
 // ---- Elegir lugares por mapa (filtro por millas) ----
@@ -257,7 +257,7 @@ async function loadNearby(fit){
   const miles = parseFloat($('radiusSel').value);
   const on = $('openNowSw').checked ? '&openNow=1' : '';
   const rg = selectedRegion ? '&region=' + encodeURIComponent(selectedRegion) : '';
-  $('pickHint').textContent = 'Buscando lugares…';
+  $('pickHint').textContent = t('map_searching');
   try {
     const r = await fetch(`/api/places/near?lat=${pickCenter.lat}&lng=${pickCenter.lng}&miles=${miles}${on}${rg}`);
     const data = await r.json();
@@ -269,19 +269,20 @@ async function loadNearby(fit){
       radius: miles * 1609.34, color: '#c96f2e', weight: 1.5, fillOpacity: 0.07 }).addTo(pickMap);
     pickCenterDot = L.marker([pickCenter.lat, pickCenter.lng], {
       icon: L.divIcon({ className: '', html: '<div class="me-dot" style="width:14px;height:14px"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
-    }).addTo(pickMap).bindPopup('Centro de búsqueda');
+    }).addTo(pickMap).bindPopup(t('search_center'));
     data.places.forEach(p => {
       nearCache.set(p.id, p);
       const m = L.marker([p.lat, p.lng], { icon: pickIcon(selected.has(p.id)) }).addTo(pickMap);
       m._pid = p.id;
       m.bindPopup(`<strong>${esc(p.name)}</strong><br>
         <span style="color:#666;font-size:.85rem">${esc(p.type || '')}${p.type ? ' · ' : ''}${p.distance} mi</span><br>
-        <button data-pick="${esc(p.id)}" class="btn-ghost btn-small" style="margin-top:6px">${selected.has(p.id) ? 'Quitar ✕' : 'Añadir ✓'}</button>`);
+        <a href="${esc(gmapsUrl(p))}" target="_blank" rel="noopener" title="${t('maps_btn')}">${mapsLogo()}</a>
+        <button data-pick="${esc(p.id)}" class="btn-ghost btn-small" style="margin-top:6px">${selected.has(p.id) ? t('remove') : t('add')}</button>`);
       pickPins.push(m);
     });
-    $('pickHint').textContent = `${data.count} lugares dentro de ${miles} ${miles === 1 ? 'milla' : 'millas'}. Toca un pin para añadirlo.`;
+    $('pickHint').textContent = `${data.count} ${t('map_places_in')} ${miles} ${miles === 1 ? t('mile_sg') : t('mile_pl')}. ${t('map_tap_pin')}`;
     if (fit) pickMap.fitBounds(pickCircle.getBounds().pad(0.05));
-  } catch(e){ $('pickHint').textContent = 'No se pudo cargar los lugares.'; }
+  } catch(e){ $('pickHint').textContent = t('map_load_fail'); }
 }
 function initPickMap(){
   pickCenter = { ...BA_AIRBNB };
@@ -291,25 +292,25 @@ function initPickMap(){
     const b = e.target.closest('[data-pick]');
     if (!b) return;
     toggle(b.dataset.pick);
-    b.textContent = selected.has(b.dataset.pick) ? 'Quitar ✕' : 'Añadir ✓';
+    b.textContent = selected.has(b.dataset.pick) ? t('remove') : t('add');
   });
   $('radiusSel').addEventListener('change', () => loadNearby(true));
   $('openNowSw').addEventListener('change', () => { loadNearby(true); seedCarousel(); });
   $('expandMapBtn').addEventListener('click', () => {
     const c = $('pickMapCard');
     const full = c.classList.toggle('map-full');
-    $('expandMapBtn').textContent = full ? '✕ Cerrar' : '⛶ Expandir';
+    $('expandMapBtn').textContent = full ? t('collapse') : t('expand');
     setTimeout(() => pickMap && pickMap.invalidateSize(), 80);
   });
   $('geoBtn').addEventListener('click', () => {
-    if (!navigator.geolocation) { alert('Tu navegador no da ubicación'); return; }
+    if (!navigator.geolocation) { alert(t('link_no_geo')); return; }
     $('geoBtn').disabled = true;
     navigator.geolocation.getCurrentPosition(pos => {
       pickCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
       loadNearby(true);
       seedCarousel();
       $('geoBtn').disabled = false;
-    }, () => { alert('No se pudo obtener tu ubicación'); $('geoBtn').disabled = false; }, { timeout: 10000 });
+    }, () => { alert(t('link_no_loc')); $('geoBtn').disabled = false; }, { timeout: 10000 });
   });
   loadNearby(true);
 }
@@ -324,7 +325,7 @@ function myRoomCodes(){
   return codes;
 }
 function statusBadge(state){
-  const map = { open: ['open', 'Abierta'], closed: ['closed', 'Cerrada'], expired: ['expired', 'Vencida'] };
+  const map = { open: ['open', t('state_open')], closed: ['closed', t('state_closed')], expired: ['expired', t('state_expired')] };
   const [cls, label] = map[state] || map.expired;
   return `<span class="status ${cls}">${label}</span>`;
 }
@@ -335,17 +336,17 @@ async function loadActiveRooms(){
     const r = await fetch('/api/rooms/active');
     const d = await r.json();
     if (!d.rooms.length) {
-      list.innerHTML = '<p class="hint">Sin votaciones en curso — crea la primera arriba 👆</p>';
+      list.innerHTML = '<p class="hint">' + t('active_empty') + '</p>';
       return;
     }
     list.innerHTML = d.rooms.map(rm => {
       const mins = Math.max(0, Math.round((rm.expiresAt - Date.now()) / 60000));
       const hrs = Math.floor(mins / 60), mm = mins % 60;
-      const left = hrs ? `${hrs}h ${mm}m` : `${mm}m`;
+      const left = hrs ? `${hrs}${t('hours_h')} ${mm}${t('minutes')}` : `${mm}${t('minutes')}`;
       return `<div class="dash-row">
         <span style="flex:1;min-width:0"><strong>${esc(rm.title)}</strong>
-          <span class="hint"> · ${rm.candidates} lugares · ${rm.votes} ${rm.votes === 1 ? 'voto' : 'votos'} · expira en ${left}</span></span>
-        <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">Entrar →</a>
+          <span class="hint"> · ${rm.candidates} lugares · ${rm.votes} ${rm.votes === 1 ? t('vote_1') : t('vote_n')} · ${t('active_expires')} ${left}</span></span>
+        <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">${t('active_enter')}</a>
       </div>`;
     }).join('');
   } catch(e) { /* sin conexión: se reintenta en el próximo ciclo */ }
@@ -366,8 +367,8 @@ async function loadRegions(){
     const d = await r.json();
     const byId = {};
     d.regions.forEach(rg => byId[rg.id] = rg);
-    sel.innerHTML = '<option value="" disabled selected>📁 Elegir carpeta…</option>'
-      + '<option value="__all__">📁 Todas las carpetas</option>' + d.regions.map(rg =>
+    sel.innerHTML = '<option value="" disabled selected>' + t('folder_ph') + '</option>'
+      + '<option value="__all__">' + t('folder_all') + '</option>' + d.regions.map(rg =>
       `<option value="${esc(rg.id)}">${esc(rg.label)} (${rg.count})</option>`).join('');
     sel.addEventListener('change', () => {
       selectedRegion = sel.value === '__all__' ? '' : sel.value;
@@ -395,7 +396,7 @@ async function loadDashboard(){
   const box = $('dashCard'), list = $('dashList');
   if (!orgCodes.length && !votedCodes.length) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
-  list.innerHTML = '<p class="hint">Cargando…</p>';
+  list.innerHTML = '<p class="hint">' + t('dash_loading') + '</p>';
   async function fetchRooms(codes, skipPrefix, skipSet){
     const rooms = [];
     for (const c of codes) {
@@ -415,35 +416,35 @@ async function loadDashboard(){
   const row = (rm, origin, canDelete) => {
     const lead = rm.state === 'open'
       ? (rm.candidates[0] && rm.candidates[0].votes > 0
-          ? `👑 Va ganando: <strong>${esc(rm.candidates[0].name)}</strong> (${rm.candidates[0].votes})`
-          : 'Sin votos todavía')
-      : (rm.winner ? `🏆 Ganó: <strong>${esc(rm.winner.name)}</strong>` : 'Sin ganador');
+          ? `${t('leading')} <strong>${esc(rm.candidates[0].name)}</strong> (${rm.candidates[0].votes})`
+          : t('no_votes'))
+      : (rm.winner ? `${t('won')} <strong>${esc(rm.winner.name)}</strong>` : t('no_winner'));
     return `<div class="dash-row">
       <div style="flex:1;min-width:0">
         <div><strong>${esc(rm.title)}</strong> ${statusBadge(rm.state)} <span class="hint">· ${origin}</span></div>
-        <div class="hint">${rm.totalVotes === 1 ? '1 voto' : rm.totalVotes + ' votos'} · ${lead}</div>
+        <div class="hint">${rm.totalVotes === 1 ? '1 ' + t('vote_1') : rm.totalVotes + ' ' + t('vote_n')} · ${lead}</div>
       </div>
-      <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">Ver</a>
+      <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">${t('dash_view')}</a>
       ${canDelete ? `<button class="btn-ghost btn-small" data-del="${esc(rm.code)}" title="Eliminar votación">🗑️</button>`
                    : `<button class="btn-ghost btn-small" data-hide="${esc(rm.code)}" title="Quitar de mi lista">✕</button>`}
     </div>`;
   };
   const tagged = [
-    ...orgRooms.map(r => ({ r, origin: 'creada por ti', canDelete: true })),
-    ...votedRooms.map(r => ({ r, origin: 'votaste', canDelete: false }))
+    ...orgRooms.map(r => ({ r, origin: t('dash_created'), canDelete: true })),
+    ...votedRooms.map(r => ({ r, origin: t('dash_voted'), canDelete: false }))
   ];
   const actives = tagged.filter(x => x.r.state === 'open');
   const history = tagged.filter(x => x.r.state !== 'open');
   list.innerHTML =
-    (actives.length ? `<p class="hint" style="margin:0 0 4px"><strong>🟢 Votaciones activas</strong></p>` +
+    (actives.length ? `<p class="hint" style="margin:0 0 4px"><strong>${t('active_section')}</strong></p>` +
       actives.map(x => row(x.r, x.origin, x.canDelete)).join('') : '') +
-    (history.length ? `<p class="hint" style="margin:12px 0 4px"><strong>📜 Historial</strong></p>` +
+    (history.length ? `<p class="hint" style="margin:12px 0 4px"><strong>${t('history_section')}</strong></p>` +
       history.map(x => row(x.r, x.origin, x.canDelete)).join('') : '');
   list.querySelectorAll('[data-del]').forEach(b => {
     b.addEventListener('click', async () => {
       const code = b.dataset.del;
       const rm = tagged.find(x => x.r.code === code);
-      if (!confirm(`¿Eliminar la votación "${rm ? rm.r.title : code}"? Se borrará para todos.`)) return;
+      if (!confirm(t('dash_delete_confirm', { t: rm ? rm.r.title : code }))) return;
       b.disabled = true;
       try {
         const r = await fetch('/api/rooms/' + code, {
@@ -453,7 +454,7 @@ async function loadDashboard(){
         if (!r.ok) throw new Error((await r.json()).error || 'Error');
         localStorage.removeItem('gv_org_' + code);
         loadDashboard();
-      } catch(e){ alert('No se pudo eliminar: ' + e.message); b.disabled = false; }
+      } catch(e){ alert(t('dash_delete_fail') + e.message); b.disabled = false; }
     });
   });
   list.querySelectorAll('[data-hide]').forEach(b => {
@@ -467,3 +468,4 @@ initPickMap();
 seedCarousel();
 loadDashboard();
 setInterval(loadDashboard, 15000);
+window.__reRender = () => { render(); loadDashboard(); loadActiveRooms(); if (pickMap) loadNearby(false); };

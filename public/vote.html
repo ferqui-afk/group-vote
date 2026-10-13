@@ -12,36 +12,38 @@
 <header class="top">
   <h1 id="roomTitle">🗳️ Votación</h1>
   <p><span class="status open" id="roomStatus">…</span> <span id="voteCount" class="hint"></span></p>
-  <p style="margin:6px 0 0"><a href="/" class="btn-ghost btn-small" style="text-decoration:none">← Mis votaciones</a></p>
+  <p style="margin:6px 0 0"><a href="/" class="btn-ghost btn-small" style="text-decoration:none" data-i18n="dash_title">← Mis votaciones</a></p>
+  <div class="prefs"><button id="themeBtn" aria-label="Cambiar tema">🌙</button><button id="langBtn" aria-label="Cambiar idioma">EN</button></div>
 </header>
 <main class="vote-main">
   <div id="winnerBox" class="hidden"></div>
   <div class="view-toggle">
-    <button class="btn-ghost btn-small" id="viewCards">🗺️ Lugares</button>
-    <button class="btn-ghost btn-small" id="viewBoard">📊 Tablero</button>
+    <button class="btn-ghost btn-small" id="viewCards" data-i18n="view_places">🗺️ Lugares</button>
+    <button class="btn-ghost btn-small" id="viewBoard" data-i18n="view_board_short">📊 Tablero</button>
   </div>
   <div id="voteMap"></div>
   <div id="boardView" class="hidden"></div>
   <div id="nameBox" class="card center hidden">
-    <p class="hint" style="margin:0 0 8px">✏️ Escribe tu nombre para votar:</p>
-    <input id="nameInput" maxlength="40" placeholder="Tu nombre" autocomplete="name">
+    <p class="hint" style="margin:0 0 8px" data-i18n="name_prompt">✏️ Escribe tu nombre para votar:</p>
+    <input id="nameInput" maxlength="40" placeholder="Tu nombre" data-i18n-ph="name_ph" autocomplete="name">
   </div>
   <details class="card" id="qrCard">
-    <summary style="cursor:pointer"><strong>📱 QR para invitar</strong> <span class="hint">— que entren más a votar</span></summary>
+    <summary style="cursor:pointer"><strong data-i18n="qr_title">📱 QR para invitar</strong> <span class="hint" data-i18n="qr_sub">— que entren más a votar</span></summary>
     <div class="qr-wrap center">
       <img id="qrImgVote" alt="QR de la votación" style="margin-top:8px">
-      <p><button class="btn-ghost btn-small" id="copyVoteLink">Copiar enlace</button></p>
+      <p><button class="btn-ghost btn-small" id="copyVoteLink" data-i18n="copy_link">Copiar enlace</button></p>
     </div>
   </details>
   <div id="carousel" class="carousel"></div>
   <div class="dots" id="dots"></div>
   <div class="card center hidden" id="orgCard">
-    <p class="hint">Eres el organizador de esta votación.</p>
-    <button class="btn-ghost" id="closeBtn">Cerrar votación y ver ganador</button>
+    <p class="hint" data-i18n="org_hint">Eres el organizador de esta votación.</p>
+    <button class="btn-ghost" id="closeBtn" data-i18n="close_vote_long">Cerrar votación y ver ganador</button>
   </div>
   <p class="hint center" id="expiryHint"></p>
-  <p class="center"><a href="/" class="btn-ghost btn-small" style="text-decoration:none">← Volver a Mis votaciones</a></p>
+  <p class="center"><a href="/" class="btn-ghost btn-small" style="text-decoration:none" data-i18n="back_dash">← Volver a Mis votaciones</a></p>
 </main>
+<script src="/js/prefs.js"></script>
 <script src="/js/vote.js"></script>
 </body>
 </html>

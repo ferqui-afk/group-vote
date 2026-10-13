@@ -16,9 +16,9 @@ function savedName(){ return localStorage.getItem('gv_name') || localStorage.get
 function saveName(n){ localStorage.setItem('gv_name', n); localStorage.setItem('gv_name_' + code, n); }
 
 function statusLabel(state){
-  if (state === 'open') return ['open', 'Abierta'];
-  if (state === 'closed') return ['closed', 'Cerrada'];
-  return ['expired', 'Vencida'];
+  if (state === 'open') return ['open', t('state_open')];
+  if (state === 'closed') return ['closed', t('state_closed')];
+  return ['expired', t('state_expired')];
 }
 function imgSrc(p){
   return p.image || ('data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="#eee"/><text x="300" y="165" font-size="48" text-anchor="middle">🍽️</text></svg>'));
@@ -26,12 +26,6 @@ function imgSrc(p){
 function reelShortcode(url){
   const m = /instagram\.com\/(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(url || '');
   return m ? m[1] : null;
-}
-function gmapsUrl(p){
-  const q = (p.lat != null && p.lng != null)
-    ? p.lat + ',' + p.lng
-    : [p.name, p.address].filter(Boolean).join(' ');
-  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
 }
 function haversineKm(a, b, c, d){
   const R = 6371, t = Math.PI / 180;
@@ -41,7 +35,7 @@ function haversineKm(a, b, c, d){
 function distLabel(p){
   if (!userLoc || p.lat == null || p.lng == null) return '';
   const km = haversineKm(userLoc.lat, userLoc.lng, p.lat, p.lng);
-  return km < 1 ? ` · 📍 a ${Math.round(km*1000)} m` : ` · 📍 a ${km.toFixed(1)} km`;
+  return km < 1 ? ` · 📍 ${Math.round(km*1000)} m` : ` · 📍 ${km.toFixed(1)} km`;
 }
 
 let meMarker = null;
@@ -57,7 +51,7 @@ function showMyLocation(center){
     }).addTo(map).bindPopup('📍 Tú estás aquí');
     if (center) map.setView(ll, 14);
     if (roomData) render(roomData); // refresca distancias
-  }, () => alert('No se pudo obtener tu ubicación'), { timeout: 10000 });
+  }, () => alert(t('link_no_loc')), { timeout: 10000 });
 }
 
 function initMap(cands){
@@ -73,9 +67,9 @@ function initMap(cands){
     options: { position: 'topright' },
     onAdd: function(){
       const btn = L.DomUtil.create('button', 'locate-btn');
-      btn.title = 'Ver mi ubicación';
+      btn.title = t('view_loc');
       btn.innerHTML = '📍';
-      btn.setAttribute('aria-label', 'Ver mi ubicación');
+      btn.setAttribute('aria-label', t('view_loc'));
       L.DomEvent.on(btn, 'click', e => { L.DomEvent.stop(e); showMyLocation(true); });
       return btn;
     }
@@ -111,26 +105,26 @@ function cardHtml(c, i, room){
   const named = (c.voters || []).filter(Boolean);
   const anon = c.votes - named.length;
   const voterLine = named.length || anon > 0
-    ? `<div class="voters">👤 ${esc(named.join(', '))}${named.length && anon > 0 ? ', ' : ''}${anon > 0 ? anon + ' anónimo' + (anon > 1 ? 's' : '') : ''}</div>` : '';
+    ? `<div class="voters">👤 ${esc(named.join(', '))}${named.length && anon > 0 ? ', ' : ''}${anon > 0 ? anon + ' ' + t('anon') + (anon > 1 && currentLang() === 'es' ? 's' : '') : ''}</div>` : '';
   const sc = reelShortcode(c.reel_url);
   const reel = sc
     ? `<div class="reel-wrap"><iframe src="https://www.instagram.com/reel/${sc}/embed" loading="lazy" allowtransparency="true" title="Reel de Instagram"></iframe></div>
-       <div class="btn-row"><a class="btn-ghost" href="${esc(c.reel_url)}" target="_blank" rel="noopener">▶ Ver reel en Instagram</a></div>`
+       <div class="btn-row"><a class="btn-ghost" href="${esc(c.reel_url)}" target="_blank" rel="noopener">${t('reel_btn')}</a></div>`
     : '';
   return `<article class="ccard${i === activeIdx ? ' active' : ''}" data-i="${i}">
     <div class="num-badge">${i + 1}</div>
     <img class="photo" src="${esc(imgSrc(c))}" alt="" loading="lazy">
-    <div class="name">${esc(c.name)}${mine ? '<span class="badge">tu voto ✓</span>' : ''}</div>
+    <div class="name">${esc(c.name)}${mine ? '<span class="badge">' + t('your_vote') + '</span>' : ''}</div>
     <div class="meta">${esc([c.type, c.neighborhood].filter(Boolean).join(' · '))}${esc(distLabel(c))}</div>
     ${c.address ? `<div class="line">📍 ${esc(c.address)}</div>` : ''}
     ${c.hours ? `<div class="line">🕐 ${esc(c.hours)}</div>` : ''}
     ${c.notes ? `<div class="line notes">${esc(c.notes.length > 200 ? c.notes.slice(0, 200) + '…' : c.notes)}</div>` : ''}
     ${reel}
-    <div class="btn-row"><a class="btn-ghost" href="${esc(gmapsUrl(c))}" target="_blank" rel="noopener">🗺️ Ver en Google Maps</a></div>
-    <div class="result-line"><span><strong>${c.votes}</strong> ${c.votes === 1 ? 'voto' : 'votos'}</span></div>
+    <div class="btn-row"><a class="btn-ghost" href="${esc(gmapsUrl(c))}" target="_blank" rel="noopener">${mapsLogo()}${t('maps_btn')}</a></div>
+    <div class="result-line"><span><strong>${c.votes}</strong> ${c.votes === 1 ? t('vote_1') : t('vote_n')}</span></div>
     ${voterLine}
     <div class="bar"><div style="width:${pct}%"></div></div>
-    ${canVote ? `<button class="vote-btn" data-id="${esc(c.id)}">${votedAlready ? 'Cambiar mi voto a este lugar' : 'Votar por este lugar'}</button>` : ''}
+    ${canVote ? `<button class="vote-btn" data-id="${esc(c.id)}">${votedAlready ? t('change_vote') : t('vote_btn')}</button>` : ''}
   </article>`;
 }
 
@@ -143,11 +137,11 @@ function render(room){
   const st = $('roomStatus');
   st.className = 'status ' + cls;
   st.textContent = label;
-  $('voteCount').textContent = room.totalVotes === 1 ? '1 voto' : room.totalVotes + ' votos';
+  $('voteCount').textContent = room.totalVotes === 1 ? '1 ' + t('vote_1') : room.totalVotes + ' ' + t('vote_n');
 
   const d = new Date(room.expiresAt);
   $('expiryHint').textContent = room.state === 'open'
-    ? 'Cierra automáticamente: ' + d.toLocaleString('es', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+    ? t('auto_close') + d.toLocaleString(currentLang(), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
     : '';
 
   // Vista tablero vs tarjetas
@@ -162,11 +156,11 @@ function render(room){
   if (room.winner && room.state !== 'open') {
     const w = room.winner;
     wb.classList.remove('hidden');
-    wb.innerHTML = `<div class="winner"><h2>🏆 ¡Ganador!</h2>
+    wb.innerHTML = `<div class="winner"><h2>${t('winner')}</h2>
       <div class="name" style="font-weight:700;font-size:1.1rem">${esc(w.name)}</div>
       ${w.address ? `<div class="hint">📍 ${esc(w.address)}</div>` : ''}
-      <div class="hint">${w.votes} ${w.votes === 1 ? 'voto' : 'votos'}</div>
-      <p><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="${gmapsUrl(w)}">Ver en Google Maps 🗺️</a></p></div>`;
+      <div class="hint">${w.votes} ${w.votes === 1 ? t('vote_1') : t('vote_n')}</div>
+      <p><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="${gmapsUrl(w)}">${mapsLogo()}${t('maps_btn')}</a></p></div>`;
   } else wb.classList.add('hidden');
 
   // Caja de nombre
@@ -185,7 +179,7 @@ function render(room){
       cv.className = 'hint center';
       nb.after(cv);
     }
-    cv.innerHTML = `Votaste por <strong>${esc(picked ? picked.name : '')}</strong> · toca otro lugar para cambiar tu voto 🔄`;
+    cv.innerHTML = `${t('voted_for')} <strong>${esc(picked ? picked.name : '')}</strong> · ${t('change_hint')}`;
   } else if (cv) cv.remove();
 
   // QR para invitar (siempre disponible mientras la sala exista)
@@ -223,13 +217,13 @@ function render(room){
   const orgToken = localStorage.getItem('gv_org_' + code);
   $('orgCard').classList.toggle('hidden', !(orgToken && room.state === 'open'));
   $('closeBtn').onclick = async () => {
-    if (!confirm('¿Cerrar la votación y mostrar el ganador?')) return;
+    if (!confirm(t('close_confirm'))) return;
     const r = await fetch('/api/rooms/' + code + '/close', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ organizerToken: orgToken })
     });
     if (r.ok) render(await r.json());
-    else alert('No se pudo cerrar.');
+    else alert(t('close_fail'));
   };
 
   clearInterval(pollTimer);
@@ -250,16 +244,16 @@ function renderBoard(room){
   const max = Math.max(1, ...cands.map(c => c.votes));
   const medal = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span class="hint">${i + 1}.</span>`;
   $('boardView').innerHTML =
-    `<div class="card"><h3 style="margin:0 0 4px">📊 Tablero en vivo</h3>
-     <p class="hint" style="margin:0">Toca un lugar para ver su tarjeta · se actualiza solo</p></div>` +
+    `<div class="card"><h3 style="margin:0 0 4px">📊 ${t('view_board')}</h3>
+     <p class="hint" style="margin:0">${t('board_sub')}</p></div>` +
     cands.map((c, i) => {
       const pct = Math.round(c.votes / max * 100);
       const voters = (c.voters || []).map(v => `<span class="voter-chip">${esc(v)}</span>`).join('');
       return `<div class="board-row" data-id="${esc(c.id)}">
         <div class="board-top"><div>${medal(i)} <strong>${esc(c.name)}</strong></div>
-        <div class="hint">${c.votes === 1 ? '1 voto' : c.votes + ' votos'}</div></div>
+        <div class="hint">${c.votes === 1 ? '1 ' + t('vote_1') : c.votes + ' ' + t('vote_n')}</div></div>
         <div class="board-bar"><div class="board-fill" style="width:${pct}%"></div></div>
-        ${voters ? `<div class="board-voters">${voters}</div>` : '<div class="hint">Sin votos todavía</div>'}
+        ${voters ? `<div class="board-voters">${voters}</div>` : '<div class="hint">' + t('no_votes') + '</div>'}
       </div>`;
     }).join('');
   $('boardView').querySelectorAll('.board-row').forEach(row => {
@@ -273,10 +267,11 @@ $('viewCards').addEventListener('click', () => setView('cards'));
 $('viewBoard').addEventListener('click', () => setView('board'));
 $('viewCards').classList.add('active-view');
 $('copyVoteLink').addEventListener('click', async () => {
-  try { await navigator.clipboard.writeText(location.href); $('copyVoteLink').textContent = '¡Copiado!'; }
-  catch(e){ prompt('Copia el enlace:', location.href); }
-  setTimeout(() => $('copyVoteLink').textContent = 'Copiar enlace', 1500);
+  try { await navigator.clipboard.writeText(location.href); $('copyVoteLink').textContent = t('copied'); }
+  catch(e){ prompt(t('copy_prompt'), location.href); }
+  setTimeout(() => $('copyVoteLink').textContent = t('copy_link'), 1500);
 });
+window.__reRender = () => { if (roomData) render(roomData); };
 
 function goTo(idx){
   const car = $('carousel');
@@ -292,8 +287,8 @@ async function load(){
   try {
     const r = await fetch('/api/rooms/' + code);
     if (!r.ok) {
-      $('roomTitle').textContent = '😕 Votación no encontrada';
-      $('carousel').innerHTML = '<div class="ccard"><p>Revisa que el enlace o QR esté completo.</p></div>';
+      $('roomTitle').textContent = '😕 ' + t('not_found_title');
+      $('carousel').innerHTML = '<div class="ccard"><p>' + t('room_not_found') + '</p></div>';
       return;
     }
     render(await r.json());
@@ -303,14 +298,14 @@ async function load(){
 async function vote(placeId){
   const nameInput = $('nameInput');
   const name = (nameInput ? nameInput.value : savedName()).trim();
-  if (!name) { alert('Escribe tu nombre para votar 🙂'); if (nameInput) nameInput.focus(); return; }
+  if (!name) { alert(t('name_prompt')); if (nameInput) nameInput.focus(); return; }
   saveName(name);
   const r = await fetch('/api/rooms/' + code + '/vote', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ placeId, name })
   });
   const data = await r.json();
-  if (!r.ok) { alert(data.error || 'No se pudo votar'); return; }
+  if (!r.ok) { alert(data.error || t('vote_fail')); return; }
   setVotedFlag();
   render(data);
 }

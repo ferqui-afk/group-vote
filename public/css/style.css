@@ -125,3 +125,28 @@ button{font-size:1rem;border:0;border-radius:10px;padding:12px 18px;cursor:point
 .me-dot{background:#1d4ed8;border:3px solid #fff;border-radius:99px;box-shadow:0 0 0 2px rgba(29,78,216,.4), 0 1px 4px rgba(0,0,0,.35)}
 .chip-row{display:none}
 #regionSel{max-width:220px}
+.prefs{display:flex;gap:6px;margin-top:8px}
+.prefs button{width:auto;padding:6px 12px;font-size:.85rem;background:var(--card);border:1px solid var(--line);color:var(--ink)}
+/* ---- Dark mode ---- */
+html[data-theme="dark"]{
+  --bg:#17140f; --card:#241f19; --ink:#f0e9df; --muted:#b3a897;
+  --accent:#e06c2b; --accent-dark:#f08a4b; --line:#3a322a;
+  --green:#4ade80;
+}
+html[data-theme="dark"] input[type=text],html[data-theme="dark"] input[type=search]{background:#2c261e}
+html[data-theme="dark"] .btn-ghost{background:#2c261e}
+html[data-theme="dark"] .btn:disabled{background:#4a4238}
+html[data-theme="dark"] .place img,html[data-theme="dark"] .pick-card img,html[data-theme="dark"] .ccard .photo{background:#3a322a}
+html[data-theme="dark"] .bar{background:#3a322a}
+html[data-theme="dark"] .selectable.selected{background:#3a241a}
+html[data-theme="dark"] .chip{background:#3a322a}
+html[data-theme="dark"] .pick-card{background:#241f19}
+html[data-theme="dark"] .pick-card .type,html[data-theme="dark"] .pick-card .addr{color:#b3a897}
+html[data-theme="dark"] .status.open{background:#14532d;color:#bbf7d0}
+html[data-theme="dark"] .status.closed{background:#7f1d1d;color:#fecaca}
+html[data-theme="dark"] .status.expired{background:#3a322a;color:#d6d3d1}
+html[data-theme="dark"] .qr-wrap img{background:#fff}
+html[data-theme="dark"] .slider{background:#555}
+html[data-theme="dark"] .leaflet-container{background:#1c1c1c}
+html[data-theme="dark"] .leaflet-popup-content-wrapper,html[data-theme="dark"] .leaflet-popup-tip{background:#241f19;color:#f0e9df}
+html[data-theme="dark"] .leaflet-bar a{background:#2c261e;color:#f0e9df;border-color:#3a322a}
