@@ -366,12 +366,16 @@ async function loadRegions(){
     const d = await r.json();
     const byId = {};
     d.regions.forEach(rg => byId[rg.id] = rg);
-    sel.innerHTML = '<option value="">📁 Elegir carpeta…</option>' + d.regions.map(rg =>
+    sel.innerHTML = '<option value="" disabled selected>📁 Elegir carpeta…</option>'
+      + '<option value="__all__">📁 Todas las carpetas</option>' + d.regions.map(rg =>
       `<option value="${esc(rg.id)}">${esc(rg.label)} (${rg.count})</option>`).join('');
     sel.addEventListener('change', () => {
-      selectedRegion = sel.value;
+      selectedRegion = sel.value === '__all__' ? '' : sel.value;
       const rg = byId[selectedRegion];
-      if (rg) {
+      if (sel.value === '__all__') {
+        pickCenter = { ...BA_AIRBNB };
+        if (pickMap) pickMap.setView([pickCenter.lat, pickCenter.lng], 11, { animate: true });
+      } else if (rg) {
         pickCenter = { lat: rg.lat, lng: rg.lng };
         if (pickMap) pickMap.setView([pickCenter.lat, pickCenter.lng], 11, { animate: true });
       }
