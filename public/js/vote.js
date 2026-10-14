@@ -105,6 +105,8 @@ function cardHtml(c, i, room){
   const pct = Math.round(c.votes / maxVotes * 100);
   const canVote = room.state === 'open' && !mine;
   const votedAlready = room.state === 'open' && votedFlag();
+  const isOrg = !!localStorage.getItem('gv_org_' + code);
+  const canRemove = isOrg && room.state === 'open' && c.votes === 0;
   const named = (c.voters || []).filter(Boolean);
   const anon = c.votes - named.length;
   const voterLine = named.length || anon > 0
@@ -128,6 +130,7 @@ function cardHtml(c, i, room){
     ${voterLine}
     <div class="bar"><div style="width:${pct}%"></div></div>
     ${canVote ? `<button class="vote-btn" data-id="${esc(c.id)}">${votedAlready ? t('change_vote') : t('vote_btn')}</button>` : ''}
+    ${canRemove ? `<button class="btn-ghost btn-small remove-cand" data-remove="${esc(c.id)}">✕ ${t('remove_cand')}</button>` : ''}
   </article>`;
 }
 
@@ -226,9 +229,9 @@ function render(room){
     setTimeout(() => { wb.scrollIntoView({ behavior: 'smooth', block: 'center' }); confettiBurst(); }, 350);
   } else if (!wKey) lastWinnerKey = '';
 
-  // Caja de nombre
+  // Caja de nombre: siempre visible mientras está abierta (se ve tu nombre y puedes cambiarlo)
   const nb = $('nameBox');
-  const showName = room.state === 'open' && !votedFlag();
+  const showName = room.state === 'open';
   nb.classList.toggle('hidden', !showName);
   if (showName && !$('nameInput').value) $('nameInput').value = savedName();
 
@@ -252,11 +255,14 @@ function render(room){
   // Carrusel (conserva la posición de scroll entre re-renders)
   const car = $('carousel');
   const savedScroll = car.scrollLeft;
+  if (activeIdx >= room.candidates.length) activeIdx = Math.max(0, room.candidates.length - 1);
   car.innerHTML = room.candidates.map((c, i) => cardHtml(c, i, room)).join('');
   $('dots').innerHTML = room.candidates.map((_, i) =>
     `<span class="${i === activeIdx ? 'on' : ''}"></span>`).join('');
   car.querySelectorAll('.vote-btn').forEach(b =>
     b.addEventListener('click', () => vote(b.dataset.id)));
+  car.querySelectorAll('[data-remove]').forEach(b =>
+    b.addEventListener('click', () => removeCandidate(b.dataset.remove)));
   [...$('dots').children].forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
   car.scrollLeft = savedScroll;
   car.onscroll = () => {
@@ -293,6 +299,7 @@ function render(room){
   // Organizador: cerrar si está abierta, reabrir si está cerrada/vencida
   const orgToken = localStorage.getItem('gv_org_' + code);
   $('orgCard').classList.toggle('hidden', !orgToken);
+  $('editPlaces').classList.toggle('hidden', room.state !== 'open');
   const cb = $('closeBtn');
   cb.textContent = room.state === 'open' ? t('close_vote_long') : t('reopen_vote');
   cb.onclick = async () => {
@@ -388,7 +395,7 @@ async function load(){
 
 async function vote(placeId){
   const nameInput = $('nameInput');
-  const name = (nameInput ? nameInput.value : savedName()).trim();
+  const name = ((nameInput ? nameInput.value : '') || savedName()).trim();
   if (!name) { alert(t('name_prompt')); if (nameInput) nameInput.focus(); return; }
   saveName(name);
   const r = await fetch('/api/rooms/' + code + '/vote', {
@@ -408,4 +415,50 @@ if (navigator.geolocation) {
     () => {}, { timeout: 8000 });
 }
 
+// ---- Editar candidatos (organizador, votación abierta) ----
+async function removeCandidate(placeId){
+  if (!confirm(t('remove_cand_confirm'))) return;
+  const r = await fetch('/api/rooms/' + code + '/candidates/' + encodeURIComponent(placeId), {
+    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ organizerToken: localStorage.getItem('gv_org_' + code) })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (r.ok) render(data);
+  else alert(data.error || t('vote_fail'));
+}
+async function addCandidate(placeId){
+  const r = await fetch('/api/rooms/' + code + '/candidates', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ organizerToken: localStorage.getItem('gv_org_' + code), placeId })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (r.ok) { $('addPlaceInput').value = ''; $('addPlaceResults').innerHTML = ''; render(data); }
+  else alert(data.error || t('vote_fail'));
+}
+let addSearchT = null;
+function initEditPlaces(){
+  const inp = $('addPlaceInput');
+  if (!inp) return;
+  inp.addEventListener('input', () => {
+    clearTimeout(addSearchT);
+    addSearchT = setTimeout(async () => {
+      const q = inp.value.trim();
+      const box = $('addPlaceResults');
+      if (q.length < 2) { box.innerHTML = ''; return; }
+      try {
+        const r = await fetch('/api/places?q=' + encodeURIComponent(q));
+        const d = await r.json();
+        const inRoom = new Set((roomData ? roomData.candidates : []).map(c => c.id));
+        const hits = (d.places || []).filter(p => !inRoom.has(p.id)).slice(0, 8);
+        box.innerHTML = hits.length ? hits.map(p =>
+          `<div class="dash-row"><span style="flex:1;min-width:0"><strong>${esc(p.name)}</strong> <span class="hint">· ${esc(p.type || '')}</span></span>
+          <button class="btn-ghost btn-small" data-add="${esc(p.id)}">${t('add_btn')}</button></div>`).join('')
+          : '<p class="hint">' + t('no_results') + '</p>';
+        box.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', () => addCandidate(b.dataset.add)));
+      } catch(e) { /* sin conexión */ }
+    }, 300);
+  });
+}
+
+initEditPlaces();
 load();

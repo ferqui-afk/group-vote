@@ -457,6 +457,34 @@ app.post('/api/rooms/:code/reopen', (req, res) => {
   res.json(roomPayload(req, fresh, getDeviceToken(req, res)));
 });
 
+// ---- Editar candidatos de una votación abierta (solo organizador) ----
+app.post('/api/rooms/:code/candidates', (req, res) => {
+  const room = getRoom(req.params.code);
+  if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
+  if (req.body.organizerToken !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
+  if (roomState(room) !== 'open') return res.status(409).json({ error: 'La votación está cerrada' });
+  const placeId = String(req.body.placeId || '');
+  const exists = db.prepare('SELECT 1 FROM places WHERE id=?').get(placeId);
+  if (!exists) return res.status(400).json({ error: 'Lugar no existe' });
+  const dup = db.prepare('SELECT 1 FROM room_candidates WHERE room_code=? AND place_id=?').get(room.code, placeId);
+  if (dup) return res.status(409).json({ error: 'Ya está en la votación' });
+  const n = db.prepare('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?').get(room.code).c;
+  if (n >= 12) return res.status(409).json({ error: 'Máximo 12 lugares' });
+  db.prepare('INSERT INTO room_candidates (room_code, place_id, position) VALUES (?,?,?)').run(room.code, placeId, n);
+  res.json(roomPayload(req, room, getDeviceToken(req, res)));
+});
+
+app.delete('/api/rooms/:code/candidates/:placeId', (req, res) => {
+  const room = getRoom(req.params.code);
+  if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
+  if (req.body.organizerToken !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
+  if (roomState(room) !== 'open') return res.status(409).json({ error: 'La votación está cerrada' });
+  const votes = db.prepare('SELECT COUNT(*) AS c FROM votes WHERE room_code=? AND place_id=?').get(room.code, req.params.placeId).c;
+  if (votes > 0) return res.status(409).json({ error: 'Tiene votos, no se puede quitar' });
+  db.prepare('DELETE FROM room_candidates WHERE room_code=? AND place_id=?').run(room.code, req.params.placeId);
+  res.json(roomPayload(req, room, getDeviceToken(req, res)));
+});
+
 app.get('/api/rooms/:code/qr.png', async (req, res) => {
   const room = getRoom(req.params.code);
   if (!room) return res.status(404).send('Sala no encontrada');

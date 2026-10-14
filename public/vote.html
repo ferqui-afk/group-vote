@@ -39,6 +39,11 @@
   <div class="card center hidden" id="orgCard">
     <p class="hint" data-i18n="org_hint">Eres el organizador de esta votación.</p>
     <button class="btn-ghost" id="closeBtn">Cerrar votación y ver ganador</button>
+    <div id="editPlaces" class="hidden" style="margin-top:12px;border-top:1px solid #ddd;padding-top:12px">
+      <p class="hint" style="margin:0 0 8px" data-i18n="edit_places">✏️ Editar lugares</p>
+      <input id="addPlaceInput" maxlength="80" placeholder="Buscar lugar para añadir…" data-i18n-ph="add_place_ph" autocomplete="off">
+      <div id="addPlaceResults" style="margin-top:8px"></div>
+    </div>
   </div>
   <p class="hint center" id="expiryHint"></p>
   <p class="center"><a href="/" class="btn-ghost btn-small" style="text-decoration:none" data-i18n="back_dash">← Volver a Mis votaciones</a></p>

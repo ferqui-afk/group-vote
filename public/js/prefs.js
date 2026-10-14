@@ -57,7 +57,9 @@ const I18N = {
     active_section: '🟢 Votaciones activas', history_section: '📜 Historial',
     maps_gmaps_label: '📍 Google Maps',
     view_board_short: '📊 Tablero',
-    reopen_vote: 'Reabrir votación', reopen_short: 'Reabrir', reopen_fail: 'No se pudo reabrir.'
+    reopen_vote: 'Reabrir votación', reopen_short: 'Reabrir', reopen_fail: 'No se pudo reabrir.',
+    edit_places: '✏️ Editar lugares', add_place_ph: 'Buscar lugar para añadir…', add_btn: 'Añadir',
+    remove_cand: 'Quitar lugar', remove_cand_confirm: '¿Quitar este lugar de la votación?'
   },
   en: {
     app_title: 'Group voting', app_sub: 'Pick places, create the voting and share the QR',
@@ -115,7 +117,9 @@ const I18N = {
     active_section: '🟢 Active votings', history_section: '📜 History',
     maps_gmaps_label: '📍 Google Maps',
     view_board_short: '📊 Board',
-    reopen_vote: 'Reopen voting', reopen_short: 'Reopen', reopen_fail: 'Could not reopen.'
+    reopen_vote: 'Reopen voting', reopen_short: 'Reopen', reopen_fail: 'Could not reopen.',
+    edit_places: '✏️ Edit places', add_place_ph: 'Search a place to add…', add_btn: 'Add',
+    remove_cand: 'Remove place', remove_cand_confirm: 'Remove this place from the voting?'
   }
 };
 function currentLang(){ return localStorage.getItem('gv_lang') || 'es'; }

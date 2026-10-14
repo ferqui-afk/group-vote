@@ -490,7 +490,7 @@ async function loadDashboard(){
     b.addEventListener('click', async () => {
       b.disabled = true;
       try {
-        const r = await fetch('/api/rooms/' + b.dataset.reopen, {
+        const r = await fetch('/api/rooms/' + b.dataset.reopen + '/reopen', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ organizerToken: localStorage.getItem('gv_org_' + b.dataset.reopen) })
         });
