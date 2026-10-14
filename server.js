@@ -499,13 +499,28 @@ app.delete('/api/rooms/:code/candidates/:placeId', (req, res) => {
 });
 
 // ---- Fotos de la experiencia (solo cuando la votación está cerrada) ----
-// Las fotos se suben a un host externo gratuito y sin cuentas (tmpfiles.org) para que
+// Las fotos se suben a un host externo gratuito y sin cuentas para que
 // sobrevivan a los redeploys, que borran el disco del contenedor.
+// Primario: catbox.moe (permanente). Respaldo: tmpfiles.org (~60 min de vida).
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 12 * 1024 * 1024, files: 6 }
 });
-async function externalUpload(buf, filename) {
+async function catboxUpload(buf, filename) {
+  const fd = new FormData();
+  fd.append('reqtype', 'fileupload');
+  fd.append('fileToUpload', new Blob([buf], { type: 'image/jpeg' }), filename || 'foto.jpg');
+  const r = await fetch('https://catbox.moe/user/api.php', {
+    method: 'POST', body: fd,
+    headers: { 'User-Agent': 'Mozilla/5.0 (group-vote)' },
+    signal: AbortSignal.timeout(60000)
+  });
+  if (!r.ok) throw new Error('catbox ' + r.status);
+  const url = (await r.text()).trim();
+  if (!url.startsWith('https://files.catbox.moe/')) throw new Error('catbox respuesta inválida');
+  return url;
+}
+async function tmpfilesUpload(buf, filename) {
   const fd = new FormData();
   fd.append('file', new Blob([buf], { type: 'image/jpeg' }), filename || 'foto.jpg');
   const r = await fetch('https://tmpfiles.org/api/v1/upload', {
@@ -515,9 +530,23 @@ async function externalUpload(buf, filename) {
   });
   if (!r.ok) throw new Error('tmpfiles ' + r.status);
   const j = await r.json().catch(() => ({}));
-  const url = j && j.data && j.data.url;
-  if (!url || !url.startsWith('https://tmpfiles.org/')) throw new Error('tmpfiles respuesta inválida');
-  return url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/'); // URL directa del archivo
+  const pageUrl = j && j.data && j.data.url;
+  if (!pageUrl || !pageUrl.startsWith('https://tmpfiles.org/')) throw new Error('tmpfiles respuesta inválida');
+  // La API devuelve la página del archivo, no el archivo: la URL directa está en el HTML.
+  const html = await (await fetch(pageUrl, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (group-vote)' },
+    signal: AbortSignal.timeout(30000)
+  })).text();
+  const m = html.match(/https:\/\/tmpfiles\.org\/dl\/[^"'\s<>]+/);
+  if (!m) throw new Error('tmpfiles sin url directa');
+  return m[0];
+}
+async function externalUpload(buf, filename) {
+  for (let i = 0; i < 3; i++) {
+    try { return await catboxUpload(buf, filename); } catch (e) { /* reintentar */ }
+    await new Promise(r => setTimeout(r, 800));
+  }
+  return tmpfilesUpload(buf, filename);
 }
 app.post('/api/rooms/:code/photos', upload.array('photos', 6), async (req, res) => {
   const room = getRoom(req.params.code);
