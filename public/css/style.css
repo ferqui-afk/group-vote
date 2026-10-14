@@ -105,6 +105,9 @@ button{font-size:1rem;border:0;border-radius:10px;padding:12px 18px;cursor:point
 .locate-btn:active{background:#f1e9db}
 .back-link{color:var(--accent);text-decoration:none;font-size:.9rem}
 #pickMap{height:340px;border-radius:10px;margin-top:8px;z-index:0}
+.map-head{display:flex;gap:8px;align-items:center}
+.map-head strong{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.map-head select{max-width:55%;padding:8px;border:1px solid var(--line);border-radius:8px;font-size:.95rem;background:#fff}
 .map-ctl{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap}
 .map-ctl select{padding:8px;border:1px solid var(--line);border-radius:8px;font-size:.95rem;background:#fff}
 .pick-pin{width:22px;height:22px;border-radius:99px;background:#c96f2e;border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35);color:#fff;font-size:.7rem;font-weight:800;display:flex;align-items:center;justify-content:center}
@@ -160,7 +163,7 @@ html[data-theme="dark"] .board-bar{background:#3a322a}
 html[data-theme="dark"] .voter-chip{background:#3a322a}
 html[data-theme="dark"] .locate-btn{background:#2c261e;color:var(--ink)}
 html[data-theme="dark"] .locate-btn:active{background:#3a322a}
-html[data-theme="dark"] .map-ctl select{background:#2c261e;color:var(--ink)}
+html[data-theme="dark"] .map-ctl select,html[data-theme="dark"] .map-head select{background:#2c261e;color:var(--ink)}
 html[data-theme="dark"] .card-x{background:rgba(36,31,25,.92);color:var(--ink)}
 html[data-theme="dark"] .num-badge{background:var(--accent)}
 html[data-theme="dark"] .pin-num.active{background:#000}

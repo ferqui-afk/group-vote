@@ -31,21 +31,12 @@
   </div>
 
   <div class="card" id="pickMapCard">
-    <strong data-i18n="map_title">🗺️ Elige por mapa</strong>
-    <p class="hint" data-i18n="map_sub">Filtra por distancia y toca los pines para añadir lugares.</p>
-    <div class="map-ctl">
-      <label class="hint" for="regionSel" data-i18n="folder">📁 Carpeta:</label>
-      <select id="regionSel"><option value="">Elegir carpeta…</option></select>
+    <div class="map-head">
+      <strong data-i18n="map_title">🗺️ Elige por mapa</strong>
+      <select id="regionSel" aria-label="Carpeta"><option value="">Elegir carpeta…</option></select>
     </div>
     <div class="map-ctl">
-      <button class="btn-ghost btn-small" id="geoBtn" data-i18n="my_loc">📍 Mi ubicación</button>
-      <button class="btn-ghost btn-small" id="expandMapBtn" data-i18n="expand">⛶ Expandir</button>
-      <label class="switch-wrap" title="Solo lugares abiertos ahora">
-        <span class="switch"><input type="checkbox" id="openNowSw"><span class="slider"></span></span>
-        <span class="hint" data-i18n="open_now">Abiertos ahora</span>
-      </label>
-      <label class="hint" for="radiusSel" data-i18n="radius">Radio:</label>
-      <select id="radiusSel">
+      <select id="radiusSel" aria-label="Radio">
         <option value="1" data-i18n="mile1">1 milla</option>
         <option value="2" data-i18n="mile2">2 millas</option>
         <option value="5" selected data-i18n="mile5">5 millas</option>
@@ -54,9 +45,14 @@
         <option value="50" data-i18n="mile50">50 millas</option>
         <option value="100" data-i18n="mile100">100 millas</option>
       </select>
+      <button class="btn-ghost btn-small" id="geoBtn" data-i18n="my_loc">📍 Mi ubicación</button>
+      <button class="btn-ghost btn-small" id="expandMapBtn" data-i18n="expand">⛶ Expandir</button>
+      <label class="switch-wrap" title="Solo lugares abiertos ahora">
+        <span class="switch"><input type="checkbox" id="openNowSw"><span class="slider"></span></span>
+        <span class="hint" data-i18n="open_now">Abiertos ahora</span>
+      </label>
     </div>
     <div id="pickMap"></div>
-    <p class="hint" id="pickHint" data-i18n="map_loading">Cargando lugares…</p>
   </div>
 
   <div class="card">
@@ -100,7 +96,7 @@
 
 <div id="selectedBar">
   <div class="chips" id="chips"></div>
-  <button class="btn" id="goCreate"><span data-i18n="go_continue">Continuar con</span> <span id="selCount">0</span> <span data-i18n="picked">elegidos</span></button>
+  <button class="btn" id="goCreate"><span data-i18n="create_btn">Crear votación</span></button>
 </div>
 
 <script src="/js/prefs.js"></script>
