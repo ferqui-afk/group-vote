@@ -131,6 +131,36 @@ function cardHtml(c, i, room){
   </article>`;
 }
 
+function confettiBurst(){
+  const c = document.createElement('canvas');
+  c.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999';
+  document.body.appendChild(c);
+  const ctx = c.getContext('2d');
+  const W = c.width = innerWidth, H = c.height = innerHeight;
+  const colors = ['#f43f5e','#f59e0b','#22c55e','#3b82f6','#a855f7','#ec4899','#facc15'];
+  const parts = Array.from({ length: 140 }, () => ({
+    x: Math.random() * W, y: -20 - Math.random() * H * 0.4,
+    w: 6 + Math.random() * 8, h: 8 + Math.random() * 10,
+    vy: 2 + Math.random() * 3.5, vx: -1.5 + Math.random() * 3,
+    rot: Math.random() * Math.PI, vr: -0.15 + Math.random() * 0.3,
+    color: colors[(Math.random() * colors.length) | 0], shape: Math.random() < 0.4 ? 'circle' : 'rect'
+  }));
+  const start = performance.now();
+  (function frame(now){
+    const t = now - start;
+    ctx.clearRect(0, 0, W, H);
+    for (const p of parts) {
+      p.y += p.vy; p.x += p.vx + Math.sin((p.y + t / 300) / 20);
+      p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot); ctx.fillStyle = p.color;
+      if (p.shape === 'circle') { ctx.beginPath(); ctx.arc(0, 0, p.w / 2, 0, 7); ctx.fill(); }
+      else ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    }
+    if (t < 4200) requestAnimationFrame(frame); else c.remove();
+  })(start);
+}
+let lastWinnerKey = '';
 function syncReels(){
   // Solo la tarjeta activa tiene el iframe vivo: al salir de una tarjeta su video se pausa (se destruye el reproductor).
   document.querySelectorAll('#carousel .ccard').forEach((cardEl, i) => {
@@ -189,6 +219,12 @@ function render(room){
       <div class="hint">${w.votes} ${w.votes === 1 ? t('vote_1') : t('vote_n')}</div>
       <p><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="${gmapsUrl(w)}">${mapsLogo()}${t('maps_btn')}</a></p></div>`;
   } else wb.classList.add('hidden');
+  // Al terminar: llevar al cuadro del ganador con confeti (una sola vez por ganador)
+  const wKey = room.winner && room.state !== 'open' ? code + ':' + room.winner.id + ':' + room.state : '';
+  if (wKey && wKey !== lastWinnerKey) {
+    lastWinnerKey = wKey;
+    setTimeout(() => { wb.scrollIntoView({ behavior: 'smooth', block: 'center' }); confettiBurst(); }, 350);
+  } else if (!wKey) lastWinnerKey = '';
 
   // Caja de nombre
   const nb = $('nameBox');
@@ -254,17 +290,28 @@ function render(room){
     else highlightPin(activeIdx);
   }
 
-  // Organizador
+  // Organizador: cerrar si está abierta, reabrir si está cerrada/vencida
   const orgToken = localStorage.getItem('gv_org_' + code);
-  $('orgCard').classList.toggle('hidden', !(orgToken && room.state === 'open'));
-  $('closeBtn').onclick = async () => {
-    if (!confirm(t('close_confirm'))) return;
-    const r = await fetch('/api/rooms/' + code + '/close', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ organizerToken: orgToken })
-    });
-    if (r.ok) render(await r.json());
-    else alert(t('close_fail'));
+  $('orgCard').classList.toggle('hidden', !orgToken);
+  const cb = $('closeBtn');
+  cb.textContent = room.state === 'open' ? t('close_vote_long') : t('reopen_vote');
+  cb.onclick = async () => {
+    if (room.state === 'open') {
+      if (!confirm(t('close_confirm'))) return;
+      const r = await fetch('/api/rooms/' + code + '/close', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizerToken: orgToken })
+      });
+      if (r.ok) render(await r.json());
+      else alert(t('close_fail'));
+    } else {
+      const r = await fetch('/api/rooms/' + code + '/reopen', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ organizerToken: orgToken })
+      });
+      if (r.ok) render(await r.json());
+      else alert(t('reopen_fail'));
+    }
   };
 
   clearInterval(pollTimer);

@@ -447,6 +447,16 @@ app.post('/api/rooms/:code/close', (req, res) => {
   res.json(roomPayload(req, fresh, getDeviceToken(req, res)));
 });
 
+app.post('/api/rooms/:code/reopen', (req, res) => {
+  const room = getRoom(req.params.code);
+  if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
+  if (req.body.organizerToken !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
+  // Reabre con 24 h frescas desde ahora, conservando los votos que ya había
+  db.prepare('UPDATE rooms SET closed_at=NULL, expires_at=? WHERE code=?').run(Date.now() + 24 * 3600 * 1000, room.code);
+  const fresh = getRoom(room.code);
+  res.json(roomPayload(req, fresh, getDeviceToken(req, res)));
+});
+
 app.get('/api/rooms/:code/qr.png', async (req, res) => {
   const room = getRoom(req.params.code);
   if (!room) return res.status(404).send('Sala no encontrada');

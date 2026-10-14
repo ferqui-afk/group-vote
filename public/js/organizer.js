@@ -469,6 +469,7 @@ async function loadDashboard(){
         <div class="hint">${rm.totalVotes === 1 ? '1 ' + t('vote_1') : rm.totalVotes + ' ' + t('vote_n')} · ${lead}</div>
       </div>
       <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">${t('dash_view')}</a>
+      ${canDelete && rm.state !== 'open' ? `<button class="btn-ghost btn-small" data-reopen="${esc(rm.code)}" title="${t('reopen_vote')}">🔄 ${t('reopen_short')}</button>` : ''}
       ${canDelete ? `<button class="btn-ghost btn-small" data-del="${esc(rm.code)}" title="Eliminar votación">🗑️</button>`
                    : `<button class="btn-ghost btn-small" data-hide="${esc(rm.code)}" title="Quitar de mi lista">✕</button>`}
     </div>`;
@@ -484,6 +485,19 @@ async function loadDashboard(){
       actives.map(x => row(x.r, x.origin, x.canDelete)).join('') : '') +
     (history.length ? `<p class="hint" style="margin:12px 0 4px"><strong>${t('history_section')}</strong></p>` +
       history.map(x => row(x.r, x.origin, x.canDelete)).join('') : '');
+  list.querySelectorAll('[data-reopen]').forEach(b => {
+    b.addEventListener('click', async () => {
+      b.disabled = true;
+      try {
+        const r = await fetch('/api/rooms/' + b.dataset.reopen, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ organizerToken: localStorage.getItem('gv_org_' + b.dataset.reopen) })
+        });
+        if (!r.ok) throw new Error((await r.json()).error || 'Error');
+        loadDashboard(); loadActiveRooms();
+      } catch(e){ alert(t('reopen_fail')); b.disabled = false; }
+    });
+  });
   list.querySelectorAll('[data-del]').forEach(b => {
     b.addEventListener('click', async () => {
       const code = b.dataset.del;

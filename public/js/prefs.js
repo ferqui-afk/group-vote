@@ -56,7 +56,8 @@ const I18N = {
     search_center: 'Centro de búsqueda', leading: '👑 Va ganando:', won: '🏆 Ganó:',
     active_section: '🟢 Votaciones activas', history_section: '📜 Historial',
     maps_gmaps_label: '📍 Google Maps',
-    view_board_short: '📊 Tablero'
+    view_board_short: '📊 Tablero',
+    reopen_vote: 'Reabrir votación', reopen_short: 'Reabrir', reopen_fail: 'No se pudo reabrir.'
   },
   en: {
     app_title: 'Group voting', app_sub: 'Pick places, create the voting and share the QR',
@@ -113,7 +114,8 @@ const I18N = {
     search_center: 'Search center', leading: '👑 Leading:', won: '🏆 Won:',
     active_section: '🟢 Active votings', history_section: '📜 History',
     maps_gmaps_label: '📍 Google Maps',
-    view_board_short: '📊 Board'
+    view_board_short: '📊 Board',
+    reopen_vote: 'Reopen voting', reopen_short: 'Reopen', reopen_fail: 'Could not reopen.'
   }
 };
 function currentLang(){ return localStorage.getItem('gv_lang') || 'es'; }
