@@ -4,9 +4,16 @@ const selected = new Map(); // id -> place
 let searchTimer = null;
 
 function esc(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+// Si la imagen local no existe (deploy slim sin /images), cae a GitHub raw y luego al placeholder.
+function placeImgErr(el){
+  const lp = el.getAttribute('data-lp') || '';
+  if(lp && !el.dataset.fb){ el.dataset.fb = '1'; el.src = 'https://raw.githubusercontent.com/ferqui-afk/group-vote/main/public' + lp; }
+  else { el.onerror = null; el.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect width="84" height="84" fill="#eee"/><text x="42" y="48" font-size="28" text-anchor="middle">🍽️</text></svg>'); }
+}
 function imgTag(p){
   const src = p.image || '';
-  return src ? `<img src="${esc(src)}" alt="" loading="lazy">`
+  const fb = src.startsWith('/images/') ? ` data-lp="${esc(src)}" onerror="placeImgErr(this)"` : '';
+  return src ? `<img src="${esc(src)}" alt="" loading="lazy"${fb}>`
              : `<img src="data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect width="84" height="84" fill="#eee"/><text x="42" y="48" font-size="28" text-anchor="middle">🍽️</text></svg>')}" alt="">`;
 }
 function reelShortcode(url){

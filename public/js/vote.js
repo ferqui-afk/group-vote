@@ -26,6 +26,17 @@ function statusLabel(state){
 function imgSrc(p){
   return p.image || ('data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300"><rect width="600" height="300" fill="#eee"/><text x="300" y="165" font-size="48" text-anchor="middle">🍽️</text></svg>'));
 }
+// Si la imagen local no existe (deploy slim sin /images), cae a GitHub raw y luego al placeholder.
+function placeImgErr(el){
+  const lp = el.getAttribute('data-lp') || '';
+  if(lp && !el.dataset.fb){ el.dataset.fb = '1'; el.src = 'https://raw.githubusercontent.com/ferqui-afk/group-vote/main/public' + lp; }
+  else { el.onerror = null; el.src = imgSrc({}); }
+}
+function placeImgTag(p, cls){
+  const src = p.image || '';
+  const fb = src.startsWith('/images/') ? ` data-lp="${esc(src)}" onerror="placeImgErr(this)"` : '';
+  return `<img class="${cls||''}" src="${esc(imgSrc(p))}" alt="" loading="lazy"${fb}>`;
+}
 function reelShortcode(url){
   const m = /instagram\.com\/(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(url || '');
   return m ? m[1] : null;
@@ -118,7 +129,7 @@ function cardHtml(c, i, room){
     : '';
   return `<article class="ccard${i === activeIdx ? ' active' : ''}" data-i="${i}">
     <div class="num-badge">${i + 1}</div>
-    <img class="photo" src="${esc(imgSrc(c))}" alt="" loading="lazy">
+    ${placeImgTag(c, 'photo')}
     <div class="name">${esc(c.name)}${mine ? '<span class="badge">' + t('your_vote') + '</span>' : ''}</div>
     <div class="meta">${esc([c.type, c.neighborhood].filter(Boolean).join(' · '))}${esc(distLabel(c))}</div>
     ${c.address ? `<div class="line">📍 ${esc(c.address)}</div>` : ''}
