@@ -61,7 +61,7 @@ async function seedCarousel(){
 }
 async function doSearch(){
   const q = $('search').value.trim();
-  if (!q && carouselSeeded) { render(); loadNearby(false); return; }
+  if (!q && carouselSeeded) { loadNearby(false); seedCarousel(); return; }
   const rg = selectedRegion ? '&region=' + encodeURIComponent(selectedRegion) : '';
   const on = $('openNowSw').checked ? '&openNow=1' : '';
   const r = await fetch('/api/places?q=' + encodeURIComponent(q) + rg + on);
@@ -335,7 +335,7 @@ function initPickMap(){
     b.textContent = selected.has(b.dataset.pick) ? t('remove') : t('add');
   });
   $('radiusSel').addEventListener('change', () => loadNearby(true));
-  $('openNowSw').addEventListener('change', () => { loadNearby(true); seedCarousel(); });
+  $('openNowSw').addEventListener('change', () => { loadNearby(true); if ($('search').value.trim()) doSearch(); else seedCarousel(); });
   $('expandMapBtn').addEventListener('click', () => {
     const c = $('pickMapCard');
     const full = c.classList.toggle('map-full');
