@@ -447,7 +447,8 @@ async function loadDashboard(){
       if (skipSet && skipSet.has(c)) continue; // ya listada en la otra sección
       try {
         const r = await fetch('/api/rooms/' + c);
-        if (!r.ok) { localStorage.removeItem(skipPrefix + c); continue; }
+        if (r.status === 404) { localStorage.removeItem(skipPrefix + c); continue; } // sala realmente borrada
+        if (!r.ok) continue; // error transitorio (deploy caído, 5xx): conservar la clave, no borrarla
         rooms.push(await r.json());
       } catch(e){}
     }
@@ -495,7 +496,7 @@ async function loadDashboard(){
         });
         if (!r.ok) throw new Error((await r.json()).error || 'Error');
         loadDashboard(); loadActiveRooms();
-      } catch(e){ alert(t('reopen_fail')); b.disabled = false; }
+      } catch(e){ alert(t('reopen_fail') + ' ' + e.message); b.disabled = false; }
     });
   });
   list.querySelectorAll('[data-del]').forEach(b => {

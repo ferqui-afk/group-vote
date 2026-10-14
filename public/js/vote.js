@@ -305,12 +305,14 @@ function render(room){
       if (r.ok) render(await r.json());
       else alert(t('close_fail'));
     } else {
-      const r = await fetch('/api/rooms/' + code + '/reopen', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ organizerToken: orgToken })
-      });
-      if (r.ok) render(await r.json());
-      else alert(t('reopen_fail'));
+      try {
+        const r = await fetch('/api/rooms/' + code + '/reopen', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ organizerToken: orgToken })
+        });
+        if (r.ok) render(await r.json());
+        else { const d = await r.json().catch(() => ({})); alert(t('reopen_fail') + ' ' + (d.error || '')); }
+      } catch(e) { alert(t('reopen_fail') + ' ' + e.message); }
     }
   };
 
