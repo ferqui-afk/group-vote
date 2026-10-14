@@ -185,10 +185,11 @@ function render(room){
   // Si nada cambió desde el último render, no tocar el DOM: así ni el mapa ni las tarjetas parpadean cada 3 s.
   const sig = JSON.stringify([view, room.state, room.myVote, room.totalVotes, room.winner && room.winner.id,
     room.candidates.map(c => [c.id, c.votes, (c.voters || []).join('|')]),
+    (room.photos || []).map(p => p.id),
     votedFlag(), userLoc ? [Math.round(userLoc.lat * 1000), Math.round(userLoc.lng * 1000)] : null]);
   if (sig === lastSig) {
     clearInterval(pollTimer);
-    if (room.state === 'open') pollTimer = setInterval(load, 3000);
+    pollTimer = setInterval(load, room.state === 'open' ? 3000 : 10000);
     return;
   }
   lastSig = sig;
@@ -215,12 +216,36 @@ function render(room){
   const wb = $('winnerBox');
   if (room.winner && room.state !== 'open') {
     const w = room.winner;
+    const photos = room.photos || [];
+    const isOrg = !!localStorage.getItem('gv_org_' + code);
+    const orgToken = localStorage.getItem('gv_org_' + code) || '';
     wb.classList.remove('hidden');
     wb.innerHTML = `<div class="winner"><h2>${t('winner')}</h2>
       <div class="name" style="font-weight:700;font-size:1.1rem">${esc(w.name)}</div>
       ${w.address ? `<div class="hint">📍 ${esc(w.address)}</div>` : ''}
       <div class="hint">${w.votes} ${w.votes === 1 ? t('vote_1') : t('vote_n')}</div>
-      <p><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="${gmapsUrl(w)}">${mapsLogo()}${t('maps_btn')}</a></p></div>`;
+      <p><a class="btn" style="display:inline-block;text-decoration:none" target="_blank" rel="noopener" href="${gmapsUrl(w)}">${mapsLogo()}${t('maps_btn')}</a></p>
+      <div class="photo-sec">
+        <p class="hint" style="margin:8px 0">${t('photos_hint')}</p>
+        <div class="btn-row">
+          <button class="btn-ghost" id="uploadPhotoBtn">📸 ${t('upload_photos')}</button>
+          <input type="file" id="photoInput" accept="image/*" multiple class="hidden">
+          ${photos.length ? `<button class="btn-ghost" id="genPostBtn">✨ ${t('gen_post')}</button>` : ''}
+          ${isOrg && photos.length ? `<a class="btn-ghost" style="text-decoration:none" href="/api/rooms/${esc(code)}/photos.zip?token=${esc(orgToken)}">⬇️ ${t('dl_photos')}</a>` : ''}
+        </div>
+        <p class="hint hidden" id="uploadMsg"></p>
+        <div class="gallery">${photos.map(p => `
+          <figure class="g-item"><img src="${esc(p.url)}" loading="lazy" alt="">
+            ${p.uploader ? `<figcaption>${esc(p.uploader)}</figcaption>` : ''}
+            ${isOrg ? `<button class="g-del" data-photodel="${esc(p.id)}" aria-label="${t('remove')}">✕</button>` : ''}
+          </figure>`).join('')}</div>
+        <div id="postRecap"></div>
+      </div></div>`;
+    $('uploadPhotoBtn').addEventListener('click', () => $('photoInput').click());
+    $('photoInput').addEventListener('change', uploadPhotos);
+    wb.querySelectorAll('[data-photodel]').forEach(b => b.addEventListener('click', () => deletePhoto(b.dataset.photodel)));
+    const gp = $('genPostBtn');
+    if (gp) gp.addEventListener('click', () => renderRecap(room));
   } else wb.classList.add('hidden');
   // Al terminar: llevar al cuadro del ganador con confeti (una sola vez por ganador)
   const wKey = room.winner && room.state !== 'open' ? code + ':' + room.winner.id + ':' + room.state : '';
@@ -324,7 +349,7 @@ function render(room){
   };
 
   clearInterval(pollTimer);
-  if (room.state === 'open') pollTimer = setInterval(load, 3000);
+  pollTimer = setInterval(load, room.state === 'open' ? 3000 : 10000);
 }
 
 // ---- Tablero en vivo ----
@@ -406,6 +431,63 @@ async function vote(placeId){
   if (!r.ok) { alert(data.error || t('vote_fail')); return; }
   setVotedFlag();
   render(data);
+}
+
+// ---- Fotos de la experiencia (votación cerrada) ----
+async function uploadPhotos(e){
+  const files = [...(e.target.files || [])].filter(f => f.type.startsWith('image/')).slice(0, 6);
+  const msg = $('uploadMsg');
+  if (!files.length || !msg) return;
+  const btn = $('uploadPhotoBtn');
+  btn.disabled = true;
+  msg.classList.remove('hidden');
+  msg.textContent = t('uploading');
+  try {
+    const fd = new FormData();
+    files.forEach(f => fd.append('photos', f, f.name));
+    fd.append('name', savedName());
+    const r = await fetch('/api/rooms/' + code + '/photos', { method: 'POST', body: fd });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || '');
+    e.target.value = '';
+    load();
+  } catch (err) {
+    msg.textContent = t('upload_fail') + (err.message || '');
+  } finally { btn.disabled = false; }
+}
+async function deletePhoto(id){
+  if (!confirm(t('photo_del_confirm'))) return;
+  const r = await fetch('/api/rooms/' + code + '/photos/' + id, {
+    method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ organizerToken: localStorage.getItem('gv_org_' + code) })
+  });
+  if (r.ok) load(); else alert(t('vote_fail'));
+}
+function renderRecap(room){
+  const w = room.winner, photos = room.photos || [];
+  const box = $('postRecap');
+  if (!box || !w) return;
+  const d = new Date(room.closedAt || Date.now());
+  const dateStr = d.toLocaleDateString(currentLang(), { day: 'numeric', month: 'long', year: 'numeric' });
+  const votesTxt = w.votes === 1 ? t('vote_1') : t('vote_n');
+  const caption = `🏆 ¡${w.name} ganó nuestra votación! (${w.votes} ${votesTxt})` +
+    (w.address ? `\n📍 ${w.address}` : '') +
+    `\n🗓️ ${dateStr}\n\n#votacionengrupo #foodie #salidaconamigos`;
+  box.innerHTML = `<div class="recap-card">
+      <h3 style="margin:0 0 4px">✨ ${t('recap_title')}</h3>
+      <div class="recap-imgs">${photos.slice(0, 4).map(p => `<img src="${esc(p.url)}" loading="lazy" alt="">`).join('')}</div>
+      <div class="recap-name">🏆 ${esc(w.name)}</div>
+      <div class="hint">${w.votes} ${votesTxt} · ${esc(dateStr)}</div>
+      <textarea id="recapCaption" readonly rows="5">${esc(caption)}</textarea>
+      <div class="btn-row"><button class="btn-ghost" id="copyCaptionBtn">📋 ${t('copy_caption')}</button></div>
+    </div>`;
+  $('copyCaptionBtn').addEventListener('click', async () => {
+    const b = $('copyCaptionBtn');
+    try { await navigator.clipboard.writeText(caption); if (b) b.textContent = t('copied'); }
+    catch (e) { const ta = $('recapCaption'); if (ta) { ta.select(); document.execCommand('copy'); } }
+    setTimeout(() => { const bb = $('copyCaptionBtn'); if (bb) bb.textContent = '📋 ' + t('copy_caption'); }, 1500);
+  });
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // Ubicación para distancias (opcional)

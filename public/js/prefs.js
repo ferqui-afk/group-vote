@@ -59,7 +59,12 @@ const I18N = {
     view_board_short: '📊 Tablero',
     reopen_vote: 'Reabrir votación', reopen_short: 'Reabrir', reopen_fail: 'No se pudo reabrir.',
     edit_places: '✏️ Editar lugares', add_place_ph: 'Buscar lugar para añadir…', add_btn: 'Añadir',
-    remove_cand: 'Quitar lugar', remove_cand_confirm: '¿Quitar este lugar de la votación?'
+    remove_cand: 'Quitar lugar', remove_cand_confirm: '¿Quitar este lugar de la votación?',
+    install_hint: '📲 Guárdalo en tu inicio: en Safari toca Compartir → "Añadir a pantalla de inicio"',
+    upload_photos: 'Subir fotos', photos_hint: 'Fotos de la experiencia — súbelas aquí para armar el contenido 📸',
+    uploading: 'Subiendo fotos…', upload_fail: 'No se pudo subir: ',
+    photo_del_confirm: '¿Borrar esta foto?', dl_photos: 'Descargar fotos',
+    gen_post: 'Generar contenido', recap_title: 'Contenido para redes', copy_caption: 'Copiar texto'
   },
   en: {
     app_title: 'Group voting', app_sub: 'Pick places, create the voting and share the QR',
@@ -119,7 +124,12 @@ const I18N = {
     view_board_short: '📊 Board',
     reopen_vote: 'Reopen voting', reopen_short: 'Reopen', reopen_fail: 'Could not reopen.',
     edit_places: '✏️ Edit places', add_place_ph: 'Search a place to add…', add_btn: 'Add',
-    remove_cand: 'Remove place', remove_cand_confirm: 'Remove this place from the voting?'
+    remove_cand: 'Remove place', remove_cand_confirm: 'Remove this place from the voting?',
+    install_hint: '📲 Save it to your home screen: in Safari tap Share → "Add to Home Screen"',
+    upload_photos: 'Upload photos', photos_hint: 'Experience photos — upload them here to build the content 📸',
+    uploading: 'Uploading photos…', upload_fail: 'Upload failed: ',
+    photo_del_confirm: 'Delete this photo?', dl_photos: 'Download photos',
+    gen_post: 'Generate content', recap_title: 'Social media content', copy_caption: 'Copy caption'
   }
 };
 function currentLang(){ return localStorage.getItem('gv_lang') || 'es'; }

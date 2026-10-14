@@ -17,6 +17,8 @@ const fs = require('fs');
 const crypto = require('crypto');
 const QRCode = require('qrcode');
 const Database = require('better-sqlite3');
+const multer = require('multer');
+const archiver = require('archiver');
 
 const app = express();
 app.set('trust proxy', 1);
@@ -55,6 +57,13 @@ CREATE TABLE IF NOT EXISTS votes (
   place_id TEXT NOT NULL, created_at INTEGER NOT NULL,
   PRIMARY KEY (room_code, device_token)
 );
+CREATE TABLE IF NOT EXISTS photos (
+  id TEXT PRIMARY KEY, room_code TEXT NOT NULL,
+  uploader_name TEXT DEFAULT '', url TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
+`);
+db.exec(`CREATE INDEX IF NOT EXISTS idx_photos_room ON photos(room_code);
 `);
  // Migración: agregar voter_name si la tabla ya existía sin esa columna
 if (!db.prepare('PRAGMA table_info(votes)').all().some(c => c.name === 'voter_name')) {
@@ -137,12 +146,16 @@ function roomPayload(req, room, deviceToken) {
     ? db.prepare('SELECT place_id FROM votes WHERE room_code=? AND device_token=?').get(room.code, deviceToken)
     : null;
   const winner = state !== 'open' && candidates.length ? candidates[0] : null;
+  const photos = db.prepare(
+    'SELECT id, uploader_name AS uploader, url, created_at AS createdAt FROM photos WHERE room_code=? ORDER BY created_at'
+  ).all(room.code);
   return {
     code: room.code, title: room.title, state,
     createdAt: room.created_at, expiresAt: room.expires_at, closedAt: room.closed_at,
     candidates, totalVotes: total,
     myVote: mine ? mine.place_id : null,
     winner: winner && (winner.votes > 0 || state !== 'open') ? winner : null,
+    photos,
     voteUrl: voteUrl(req, room.code)
   };
 }
@@ -483,6 +496,77 @@ app.delete('/api/rooms/:code/candidates/:placeId', (req, res) => {
   if (votes > 0) return res.status(409).json({ error: 'Tiene votos, no se puede quitar' });
   db.prepare('DELETE FROM room_candidates WHERE room_code=? AND place_id=?').run(room.code, req.params.placeId);
   res.json(roomPayload(req, room, getDeviceToken(req, res)));
+});
+
+// ---- Fotos de la experiencia (solo cuando la votación está cerrada) ----
+// Las fotos se suben a un host externo gratuito y sin cuentas (tmpfiles.org) para que
+// sobrevivan a los redeploys, que borran el disco del contenedor.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 12 * 1024 * 1024, files: 6 }
+});
+async function externalUpload(buf, filename) {
+  const fd = new FormData();
+  fd.append('file', new Blob([buf], { type: 'image/jpeg' }), filename || 'foto.jpg');
+  const r = await fetch('https://tmpfiles.org/api/v1/upload', {
+    method: 'POST', body: fd,
+    headers: { 'User-Agent': 'Mozilla/5.0 (group-vote)' },
+    signal: AbortSignal.timeout(60000)
+  });
+  if (!r.ok) throw new Error('tmpfiles ' + r.status);
+  const j = await r.json().catch(() => ({}));
+  const url = j && j.data && j.data.url;
+  if (!url || !url.startsWith('https://tmpfiles.org/')) throw new Error('tmpfiles respuesta inválida');
+  return url.replace('https://tmpfiles.org/', 'https://tmpfiles.org/dl/'); // URL directa del archivo
+}
+app.post('/api/rooms/:code/photos', upload.array('photos', 6), async (req, res) => {
+  const room = getRoom(req.params.code);
+  if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
+  if (roomState(room) === 'open') return res.status(409).json({ error: 'La votación sigue abierta' });
+  const files = (req.files || []).filter(f => f.mimetype && f.mimetype.startsWith('image/'));
+  if (!files.length) return res.status(400).json({ error: 'Sin fotos válidas' });
+  const name = String(req.body.name || '').slice(0, 40).trim();
+  const out = [];
+  const ins = db.prepare('INSERT INTO photos (id, room_code, uploader_name, url, created_at) VALUES (?,?,?,?,?)');
+  for (const f of files) {
+    try {
+      const url = await externalUpload(f.buffer, f.originalname);
+      const id = crypto.randomBytes(8).toString('hex');
+      ins.run(id, room.code, name, url, Date.now());
+      out.push({ id, uploader: name, url });
+    } catch (e) {
+      return res.status(502).json({ error: 'No se pudo subir la foto' });
+    }
+  }
+  res.json({ photos: out });
+});
+app.delete('/api/rooms/:code/photos/:id', (req, res) => {
+  const room = getRoom(req.params.code);
+  if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
+  if (String((req.body && req.body.organizerToken) || '') !== room.organizer_token)
+    return res.status(403).json({ error: 'No autorizado' });
+  db.prepare('DELETE FROM photos WHERE id=? AND room_code=?').run(req.params.id, room.code);
+  res.json({ ok: true });
+});
+app.get('/api/rooms/:code/photos.zip', async (req, res) => {
+  const room = getRoom(req.params.code);
+  if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
+  if (String(req.query.token || '') !== room.organizer_token)
+    return res.status(403).json({ error: 'No autorizado' });
+  const photos = db.prepare('SELECT id, url FROM photos WHERE room_code=? ORDER BY created_at').all(room.code);
+  res.type('zip');
+  res.set('Content-Disposition', 'attachment; filename="fotos-' + room.code + '.zip"');
+  const archive = archiver('zip', { zlib: { level: 9 } });
+  archive.on('error', () => { try { res.end(); } catch {} });
+  archive.pipe(res);
+  let i = 0;
+  for (const p of photos) {
+    try {
+      const r = await fetch(p.url, { signal: AbortSignal.timeout(30000) });
+      if (r.ok) archive.append(Buffer.from(await r.arrayBuffer()), { name: 'foto-' + (++i) + '.jpg' });
+    } catch { /* salta la foto que falle */ }
+  }
+  await archive.finalize();
 });
 
 app.get('/api/rooms/:code/qr.png', async (req, res) => {
