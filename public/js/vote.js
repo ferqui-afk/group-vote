@@ -221,6 +221,7 @@ function render(room){
     `<span class="${i === activeIdx ? 'on' : ''}"></span>`).join('');
   car.querySelectorAll('.vote-btn').forEach(b =>
     b.addEventListener('click', () => vote(b.dataset.id)));
+  [...$('dots').children].forEach((dot, i) => dot.addEventListener('click', () => goTo(i)));
   car.scrollLeft = savedScroll;
   car.onscroll = () => {
     // Durante el swipe se ocultan los iframes (no flotan) y al terminar se sincronizan los reels.
@@ -232,7 +233,8 @@ function render(room){
     const mid = car.scrollLeft + car.clientWidth / 2;
     let best = 0, bestD = Infinity;
     cards.forEach((el, i) => {
-      const c = el.offsetLeft + el.offsetWidth / 2;
+      // offsetLeft es relativo a la página: restar el del carrusel para comparar en coordenadas del carrusel.
+      const c = el.offsetLeft - car.offsetLeft + el.offsetWidth / 2;
       const dd = Math.abs(c - mid);
       if (dd < bestD) { bestD = dd; best = i; }
     });
@@ -319,7 +321,7 @@ function goTo(idx){
   activeIdx = idx;
   cards.forEach((el, i) => el.classList.toggle('active', i === idx));
   [...$('dots').children].forEach((el, i) => el.classList.toggle('on', i === idx));
-  car.scrollTo({ left: cards[idx].offsetLeft - (car.clientWidth - cards[idx].offsetWidth) / 2, behavior: 'smooth' });
+  car.scrollTo({ left: cards[idx].offsetLeft - car.offsetLeft - (car.clientWidth - cards[idx].offsetWidth) / 2, behavior: 'smooth' });
   highlightPin(idx);
   setTimeout(syncReels, 400);
 }
