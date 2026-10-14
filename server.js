@@ -349,19 +349,22 @@ app.post('/api/places/custom', (req, res) => {
 app.get('/api/places', (req, res) => {
   const q = norm((req.query.q || '').trim());
   const region = String(req.query.region || '').trim();
+  const openNow = req.query.openNow === '1';
   const regionFilter = region ? 'AND region = ?' : '';
   const params = [];
   let sql;
   if (q) {
-    sql = `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
+    sql = `SELECT id, name, type, address, hours, hours_json, notes, image, neighborhood, reel_url, lat, lng FROM places
        WHERE search_text LIKE ? ${regionFilter} ORDER BY name LIMIT 60`;
     params.push('%' + q.replace(/[%_]/g, '') + '%');
   } else {
-    sql = `SELECT id, name, type, address, hours, notes, image, neighborhood, reel_url, lat, lng FROM places
+    sql = `SELECT id, name, type, address, hours, hours_json, notes, image, neighborhood, reel_url, lat, lng FROM places
        WHERE 1=1 ${regionFilter} ORDER BY name LIMIT 60`;
   }
   if (region) params.push(region);
-  res.json({ places: db.prepare(sql).all(...params) });
+  let places = db.prepare(sql).all(...params);
+  if (openNow) places = places.filter(p => isOpenNow(p.hours_json));
+  res.json({ places: places.map(({ hours_json, ...p }) => p) });
 });
 
 // ---- Votaciones en curso (lista pública, se actualiza en vivo) ----

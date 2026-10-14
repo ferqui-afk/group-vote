@@ -61,13 +61,19 @@ async function seedCarousel(){
 }
 async function doSearch(){
   const q = $('search').value.trim();
-  if (!q && carouselSeeded) { render(); return; }
+  if (!q && carouselSeeded) { render(); loadNearby(false); return; }
   const rg = selectedRegion ? '&region=' + encodeURIComponent(selectedRegion) : '';
-  const r = await fetch('/api/places?q=' + encodeURIComponent(q) + rg);
+  const on = $('openNowSw').checked ? '&openNow=1' : '';
+  const r = await fetch('/api/places?q=' + encodeURIComponent(q) + rg + on);
   const data = await r.json();
   lastResults = data.places;
   carouselSeeded = true;
   render();
+  if (q) { // la búsqueda también filtra los pines del mapa
+    drawPins(lastResults);
+    $('pickHint').textContent = lastResults.length + ' ' + t('map_search_pins');
+    fitToPins();
+  }
 }
 function render(){
   const q = $('search').value.trim();
@@ -279,24 +285,44 @@ async function loadNearby(fit){
     nearCache.clear();
     if (pickCircle) pickMap.removeLayer(pickCircle);
     if (pickCenterDot) pickMap.removeLayer(pickCenterDot);
+    pickCircle = null; pickCenterDot = null;
+    const q = $('search').value.trim();
+    if (q) {
+      // Búsqueda activa: el mapa muestra solo los resultados de la búsqueda
+      drawPins(lastResults);
+      $('pickHint').textContent = lastResults.length + ' ' + t('map_search_pins');
+      fitToPins();
+      return;
+    }
     pickCircle = L.circle([pickCenter.lat, pickCenter.lng], {
       radius: miles * 1609.34, color: '#c96f2e', weight: 1.5, fillOpacity: 0.07 }).addTo(pickMap);
     pickCenterDot = L.marker([pickCenter.lat, pickCenter.lng], {
       icon: L.divIcon({ className: '', html: '<div class="me-dot" style="width:14px;height:14px"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
     }).addTo(pickMap).bindPopup(t('search_center'));
-    data.places.forEach(p => {
-      nearCache.set(p.id, p);
-      const m = L.marker([p.lat, p.lng], { icon: pickIcon(selected.has(p.id)) }).addTo(pickMap);
-      m._pid = p.id;
-      m.bindPopup(`<strong>${esc(p.name)}</strong><br>
-        <span style="color:var(--muted);font-size:.85rem">${esc(p.type || '')}${p.type ? ' · ' : ''}${p.distance} mi</span><br>
-        <a href="${esc(gmapsUrl(p))}" target="_blank" rel="noopener" title="${t('maps_btn')}">${mapsLogo()}</a>
-        <button data-pick="${esc(p.id)}" class="btn-ghost btn-small" style="margin-top:6px">${selected.has(p.id) ? t('remove') : t('add')}</button>`);
-      pickPins.push(m);
-    });
+    drawPins(data.places);
     $('pickHint').textContent = `${data.count} ${t('map_places_in')} ${miles} ${miles === 1 ? t('mile_sg') : t('mile_pl')}. ${t('map_tap_pin')}`;
     if (fit) pickMap.fitBounds(pickCircle.getBounds().pad(0.05));
   } catch(e){ $('pickHint').textContent = t('map_load_fail'); }
+}
+function drawPins(places){
+  pickPins.forEach(m => pickMap.removeLayer(m)); pickPins = [];
+  places.forEach(p => {
+    if (p.lat == null || p.lng == null) return;
+    nearCache.set(p.id, p);
+    const m = L.marker([p.lat, p.lng], { icon: pickIcon(selected.has(p.id)) }).addTo(pickMap);
+    m._pid = p.id;
+    m.bindPopup(`<strong>${esc(p.name)}</strong><br>
+      <span style="color:var(--muted);font-size:.85rem">${esc(p.type || '')}${p.type && p.distance != null ? ' · ' : ''}${p.distance != null ? p.distance + ' mi' : ''}</span><br>
+      <a href="${esc(gmapsUrl(p))}" target="_blank" rel="noopener" title="${t('maps_btn')}">${mapsLogo()}</a>
+      <button data-pick="${esc(p.id)}" class="btn-ghost btn-small" style="margin-top:6px">${selected.has(p.id) ? t('remove') : t('add')}</button>`);
+    pickPins.push(m);
+  });
+}
+function fitToPins(){
+  if (!pickMap || !pickPins.length) return;
+  const pts = pickPins.map(m => m.getLatLng());
+  if (pts.length === 1) pickMap.setView(pts[0], 14);
+  else pickMap.fitBounds(L.latLngBounds(pts).pad(0.1));
 }
 function initPickMap(){
   pickCenter = { ...BA_AIRBNB };
