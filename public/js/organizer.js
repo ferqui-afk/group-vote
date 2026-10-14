@@ -10,6 +10,24 @@ function placeImgErr(el){
   if(lp && !el.dataset.fb){ el.dataset.fb = '1'; el.src = 'https://raw.githubusercontent.com/ferqui-afk/group-vote/main/public' + lp; }
   else { el.onerror = null; el.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect width="84" height="84" fill="#eee"/><text x="42" y="48" font-size="28" text-anchor="middle">🍽️</text></svg>'); }
 }
+// ---- Tarjetas colapsables (tablero: Mis votaciones, En curso, Calendario) ----
+function makeCollapsible(cardId){
+  const card = document.getElementById(cardId);
+  if (!card) return;
+  const head = card.querySelector('h2, h3');
+  if (!head || head.dataset.collapsible) return;
+  head.dataset.collapsible = '1';
+  head.classList.add('collapsible-head');
+  const key = 'gv_collapsed_' + cardId;
+  const apply = (collapsed) => {
+    card.classList.toggle('collapsed', collapsed);
+    try { localStorage.setItem(key, collapsed ? '1' : '0'); } catch(e){}
+  };
+  head.addEventListener('click', () => apply(!card.classList.contains('collapsed')));
+  let collapsed = false;
+  try { collapsed = localStorage.getItem(key) === '1'; } catch(e){}
+  apply(collapsed);
+}
 // ---- Fechas del calendario (YYYY-MM-DD, sin zona horaria) ----
 function todayLocal(){
   const d = new Date();
@@ -483,6 +501,7 @@ async function loadCalendar(){
 document.addEventListener('DOMContentLoaded', () => {
   const ed = $('eventDate');
   if (ed && !ed.value) ed.value = todayLocal(); // fecha del plan: hoy por defecto
+  ['dashCard', 'activeRoomsCard', 'calCard'].forEach(makeCollapsible);
   loadActiveRooms();
   setInterval(loadActiveRooms, 5000); // las nuevas aparecen solas
   loadCalendar();

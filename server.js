@@ -114,7 +114,10 @@ function getDeviceToken(req, res) {
   return t;
 }
 function voteUrl(req, code) {
-  return req.protocol + '://' + req.get('host') + '/v/' + code;
+  const host = req.get('host') || '';
+  // En producción siempre https (el proxy termina TLS); solo localhost usa http.
+  const proto = /^(localhost|127\.0\.0\.1)/.test(host) ? req.protocol : 'https';
+  return proto + '://' + host + '/v/' + code;
 }
 function getRoom(code) {
   return db.prepare('SELECT * FROM rooms WHERE code=?').get(String(code).toUpperCase());
