@@ -501,7 +501,7 @@ app.delete('/api/rooms/:code/candidates/:placeId', (req, res) => {
 // ---- Fotos de la experiencia (solo cuando la votación está cerrada) ----
 // Las fotos se suben a un host externo gratuito y sin cuentas para que
 // sobrevivan a los redeploys, que borran el disco del contenedor.
-// Primario: catbox.moe (permanente). Respaldo: tmpfiles.org (~60 min de vida).
+// Cadena: catbox.moe (permanente) -> x0.at (3-100 días) -> uguu.se (3 h) -> tmpfiles.org (60 min).
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 12 * 1024 * 1024, files: 6 }
@@ -541,12 +541,42 @@ async function tmpfilesUpload(buf, filename) {
   if (!m) throw new Error('tmpfiles sin url directa');
   return m[0];
 }
+async function x0atUpload(buf, filename) {
+  const fd = new FormData();
+  fd.append('file', new Blob([buf], { type: 'image/jpeg' }), filename || 'foto.jpg');
+  const r = await fetch('https://x0.at/', {
+    method: 'POST', body: fd,
+    headers: { 'User-Agent': 'Mozilla/5.0 (group-vote)' },
+    signal: AbortSignal.timeout(60000)
+  });
+  if (!r.ok) throw new Error('x0at ' + r.status);
+  const url = (await r.text()).trim();
+  if (!url.startsWith('https://x0.at/')) throw new Error('x0at respuesta inválida');
+  return url;
+}
+async function uguuUpload(buf, filename) {
+  const fd = new FormData();
+  fd.append('files[]', new Blob([buf], { type: 'image/jpeg' }), filename || 'foto.jpg');
+  const r = await fetch('https://uguu.se/upload.php', {
+    method: 'POST', body: fd,
+    headers: { 'User-Agent': 'Mozilla/5.0 (group-vote)' },
+    signal: AbortSignal.timeout(60000)
+  });
+  if (!r.ok) throw new Error('uguu ' + r.status);
+  const j = await r.json().catch(() => ({}));
+  const url = j && j.files && j.files[0] && j.files[0].url;
+  if (!url || !url.startsWith('https://')) throw new Error('uguu respuesta inválida');
+  return url;
+}
 async function externalUpload(buf, filename) {
   for (let i = 0; i < 3; i++) {
     try { return await catboxUpload(buf, filename); } catch (e) { /* reintentar */ }
     await new Promise(r => setTimeout(r, 800));
   }
-  return tmpfilesUpload(buf, filename);
+  for (const fn of [x0atUpload, uguuUpload, tmpfilesUpload]) {
+    try { return await fn(buf, filename); } catch (e) { /* siguiente */ }
+  }
+  throw new Error('no se pudo subir la foto a ningún host');
 }
 app.post('/api/rooms/:code/photos', upload.array('photos', 6), async (req, res) => {
   const room = getRoom(req.params.code);

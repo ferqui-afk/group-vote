@@ -237,6 +237,7 @@ function render(room){
         <div class="gallery">${photos.map(p => `
           <figure class="g-item"><img src="${esc(p.url)}" loading="lazy" alt="">
             ${p.uploader ? `<figcaption>${esc(p.uploader)}</figcaption>` : ''}
+            <a class="g-dl" href="${esc(p.url)}" target="_blank" rel="noopener" aria-label="⬇️">⬇️</a>
             ${isOrg ? `<button class="g-del" data-photodel="${esc(p.id)}" aria-label="${t('remove')}">✕</button>` : ''}
           </figure>`).join('')}</div>
         <div id="postRecap"></div>
