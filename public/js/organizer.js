@@ -13,12 +13,14 @@ function reelShortcode(url){
   const m = /instagram\.com\/(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(url || '');
   return m ? m[1] : null;
 }
+let focusedId = null; // tarjeta/pin enfocado (sincronización mapa ↔ tarjetas)
 function placeCard(p){
   const sel = selected.has(p.id) ? ' selected' : '';
+  const act = focusedId === p.id ? ' active' : '';
   const linkBadge = String(p.id).startsWith('custom-') ? '<span class="badge">🔗</span>' : '';
   const sc = reelShortcode(p.reel_url);
   const hasX = (p.hours && p.hours.trim()) || (p.notes && p.notes.trim()) || sc;
-  return `<div class="pick-card${sel}" data-id="${esc(p.id)}">
+  return `<div class="pick-card${sel}${act}" data-id="${esc(p.id)}">
     ${hasX ? `<button class="card-x" data-x="${esc(p.id)}" aria-label="ver horarios">ⓘ</button>` : ''}
     ${imgTag(p)}
     <div class="info">
@@ -84,7 +86,7 @@ function render(){
         : t('no_near'));
   $('results').innerHTML = lastResults.map(placeCard).join('') || '<p class="hint">' + t('no_results') + '</p>';
   $('results').querySelectorAll('.pick-card').forEach(el => {
-    el.addEventListener('click', () => { toggle(el.dataset.id); panToPick(el.dataset.id); });
+    el.addEventListener('click', () => { focusedId = el.dataset.id; toggle(el.dataset.id); panToPick(el.dataset.id); });
   });
   $('results').querySelectorAll('[data-x]').forEach(b => {
     b.addEventListener('click', e => {
@@ -258,19 +260,36 @@ async function confirmLinkPlace(){
 const nearCache = new Map();
 let pickMap = null, pickCenter = null, pickPins = [], pickCircle = null, pickCenterDot = null;
 const BA_AIRBNB = { lat: -34.5928367, lng: -58.4218671 };
-function pickIcon(sel){
-  return L.divIcon({ className: '', html: `<div class="pick-pin${sel ? ' sel' : ''}">${sel ? '✓' : ''}</div>`,
+function pickIcon(sel, focus){
+  return L.divIcon({ className: '', html: `<div class="pick-pin${sel ? ' sel' : ''}${focus ? ' focus' : ''}">${sel ? '✓' : ''}</div>`,
     iconSize: [22, 22], iconAnchor: [11, 11] });
 }
 function panToPick(id){
   if (!pickMap) return;
+  focusedId = id;
+  refreshPickPins();
   const m = pickPins.find(m => m._pid === id);
   if (!m) return;
   pickMap.setView(m.getLatLng(), Math.max(pickMap.getZoom(), 14), { animate: true });
   setTimeout(() => m.openPopup(), 350);
 }
+// Pin → tarjeta: baja a su tarjeta, la resalta y abre sus detalles (ⓘ)
+function focusPickCard(id){
+  focusedId = id;
+  refreshPickPins();
+  const card = $('results').querySelector('.pick-card[data-id="' + CSS.escape(id) + '"]');
+  if (!card) return;
+  $('results').querySelectorAll('.pick-card.active').forEach(el => el.classList.remove('active'));
+  card.classList.add('active');
+  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  const xi = card.querySelector('.xinfo');
+  if (xi && xi.classList.contains('hidden')) {
+    const btn = card.querySelector('[data-x]');
+    if (btn) btn.click();
+  }
+}
 function refreshPickPins(){
-  pickPins.forEach(m => m.setIcon(pickIcon(selected.has(m._pid))));
+  pickPins.forEach(m => m.setIcon(pickIcon(selected.has(m._pid), focusedId === m._pid)));
 }
 async function loadNearby(fit){
   if (!pickMap || !pickCenter) return;
@@ -309,8 +328,9 @@ function drawPins(places){
   places.forEach(p => {
     if (p.lat == null || p.lng == null) return;
     nearCache.set(p.id, p);
-    const m = L.marker([p.lat, p.lng], { icon: pickIcon(selected.has(p.id)) }).addTo(pickMap);
+    const m = L.marker([p.lat, p.lng], { icon: pickIcon(selected.has(p.id), focusedId === p.id) }).addTo(pickMap);
     m._pid = p.id;
+    m.on('click', () => focusPickCard(p.id));
     m.bindPopup(`<strong>${esc(p.name)}</strong><br>
       <span style="color:var(--muted);font-size:.85rem">${esc(p.type || '')}${p.type && p.distance != null ? ' · ' : ''}${p.distance != null ? p.distance + ' mi' : ''}</span><br>
       <a href="${esc(gmapsUrl(p))}" target="_blank" rel="noopener" title="${t('maps_btn')}">${mapsLogo()}</a>
