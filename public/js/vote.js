@@ -37,6 +37,25 @@ function placeImgTag(p, cls){
   const fb = src.startsWith('/images/') ? ` data-lp="${esc(src)}" onerror="placeImgErr(this)"` : '';
   return `<img class="${cls||''}" src="${esc(imgSrc(p))}" alt="" loading="lazy"${fb}>`;
 }
+// ---- Fechas del calendario (YYYY-MM-DD, sin zona horaria) ----
+function todayLocal(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function parseYMD(s){
+  const p = String(s || '').split('-').map(Number);
+  return new Date(p[0] || 1970, (p[1] || 1) - 1, p[2] || 1);
+}
+function calDateLabel(ymd, lang){
+  lang = lang || currentLang();
+  if (!ymd) return '';
+  const t0 = todayLocal();
+  if (ymd === t0) return '📅 ' + t('today');
+  const tm = parseYMD(t0); tm.setDate(tm.getDate() + 1);
+  const tmStr = tm.getFullYear() + '-' + String(tm.getMonth() + 1).padStart(2, '0') + '-' + String(tm.getDate()).padStart(2, '0');
+  if (ymd === tmStr) return '📅 ' + t('tomorrow');
+  return '📅 ' + parseYMD(ymd).toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' });
+}
 function reelShortcode(url){
   const m = /instagram\.com\/(?:reel|p)\/([A-Za-z0-9_-]+)/.exec(url || '');
   return m ? m[1] : null;
@@ -205,6 +224,8 @@ function render(room){
   }
   lastSig = sig;
   $('roomTitle').textContent = '🗳️ ' + room.title;
+  const edh = $('eventDateHint');
+  if (edh) edh.textContent = room.eventDate ? '· 📅 ' + t('plan_for') + ' ' + calDateLabel(room.eventDate).replace(/^📅 /, '') : '';
   const [cls, label] = statusLabel(room.state);
   const st = $('roomStatus');
   st.className = 'status ' + cls;

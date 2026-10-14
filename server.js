@@ -69,6 +69,12 @@ db.exec(`CREATE INDEX IF NOT EXISTS idx_photos_room ON photos(room_code);
 if (!db.prepare('PRAGMA table_info(votes)').all().some(c => c.name === 'voter_name')) {
   db.exec("ALTER TABLE votes ADD COLUMN voter_name TEXT DEFAULT ''");
 }
+// Migración: fecha del plan (calendario) en las salas
+if (!db.prepare('PRAGMA table_info(rooms)').all().some(c => c.name === 'event_date')) {
+  db.exec("ALTER TABLE rooms ADD COLUMN event_date TEXT DEFAULT ''");
+  // las salas viejas quedan con la fecha de su creación
+  db.exec("UPDATE rooms SET event_date = date(created_at/1000, 'unixepoch') WHERE event_date = '' OR event_date IS NULL");
+}
 db.exec(`CREATE INDEX IF NOT EXISTS idx_votes_room ON votes(room_code);
 `);
 if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'search_text')) {
@@ -152,6 +158,7 @@ function roomPayload(req, room, deviceToken) {
   return {
     code: room.code, title: room.title, state,
     createdAt: room.created_at, expiresAt: room.expires_at, closedAt: room.closed_at,
+    eventDate: room.event_date || null,
     candidates, totalVotes: total,
     myVote: mine ? mine.place_id : null,
     winner: winner && (winner.votes > 0 || state !== 'open') ? winner : null,
@@ -383,15 +390,47 @@ app.get('/api/places', (req, res) => {
 // ---- Votaciones en curso (lista pública, se actualiza en vivo) ----
 app.get('/api/rooms/active', (req, res) => {
   const now = Date.now();
-  const rooms = db.prepare(`SELECT code, title, created_at, expires_at, closed_at FROM rooms
-    WHERE expires_at > ? AND closed_at IS NULL ORDER BY created_at DESC`).all(now);
+  const rooms = db.prepare(`SELECT code, title, created_at, expires_at, closed_at, event_date FROM rooms
+    WHERE expires_at > ? AND closed_at IS NULL ORDER BY event_date, created_at DESC`).all(now);
   const out = rooms.map(r => ({
     code: r.code, title: r.title,
-    createdAt: r.created_at, expiresAt: r.expires_at,
+    createdAt: r.created_at, expiresAt: r.expires_at, eventDate: r.event_date || null,
     candidates: db.prepare('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?').get(r.code).c,
     votes: db.prepare('SELECT COUNT(*) AS c FROM votes WHERE room_code=?').get(r.code).c
   }));
   res.json({ rooms: out });
+});
+
+// ---- Calendario: votaciones (abiertas y cerradas) agrupadas por fecha del plan ----
+app.get('/api/calendar', (req, res) => {
+  const days = Math.min(60, Math.max(1, parseInt(req.query.days, 10) || 14));
+  let from = String(req.query.from || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) from = new Date().toISOString().slice(0, 10);
+  const to = new Date(Date.parse(from + 'T00:00:00Z') + days * 24 * 3600 * 1000).toISOString().slice(0, 10);
+  const now = Date.now();
+  const rooms = db.prepare(
+    `SELECT code, title, event_date, created_at, expires_at, closed_at FROM rooms
+     WHERE event_date >= ? AND event_date < ? ORDER BY event_date, created_at`).all(from, to);
+  const out = [];
+  for (const r of rooms) {
+    const state = now > r.expires_at ? 'expired' : (r.closed_at ? 'closed' : 'open');
+    if (state === 'expired') continue;
+    let winnerName = null;
+    if (state === 'closed') {
+      const w = db.prepare(
+        `SELECT p.name FROM votes v JOIN places p ON p.id = v.place_id
+         WHERE v.room_code=? GROUP BY v.place_id ORDER BY COUNT(*) DESC LIMIT 1`).get(r.code);
+      winnerName = w ? w.name : null;
+    }
+    out.push({
+      code: r.code, title: r.title, eventDate: r.event_date,
+      state,
+      candidates: db.prepare('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?').get(r.code).c,
+      votes: db.prepare('SELECT COUNT(*) AS c FROM votes WHERE room_code=?').get(r.code).c,
+      winnerName
+    });
+  }
+  res.json({ rooms: out, from, days });
 });
 
 // ---- Regiones (carpetas) con centro y cantidad ----
@@ -420,13 +459,19 @@ app.post('/api/rooms', async (req, res) => {  const title = String(req.body.titl
   const code = uniqueCode();
   const organizerToken = crypto.randomBytes(16).toString('hex');
   const now = Date.now();
-  db.prepare('INSERT INTO rooms (code, title, created_at, expires_at, organizer_token) VALUES (?,?,?,?,?)')
-    .run(code, title, now, now + ROOM_TTL_MS, organizerToken);
+  // Fecha del plan (calendario): la sala vive hasta el fin del día del plan + 1 día de margen
+  const todayStr = new Date().toISOString().slice(0, 10);
+  let eventDate = String(req.body.eventDate || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || isNaN(Date.parse(eventDate + 'T00:00:00Z'))) eventDate = todayStr;
+  if (eventDate < todayStr) eventDate = todayStr;
+  const expiresAt = Date.parse(eventDate + 'T00:00:00Z') + 2 * 24 * 3600 * 1000;
+  db.prepare('INSERT INTO rooms (code, title, created_at, expires_at, organizer_token, event_date) VALUES (?,?,?,?,?,?)')
+    .run(code, title, now, expiresAt, organizerToken, eventDate);
   const ins = db.prepare('INSERT INTO room_candidates (room_code, place_id, position) VALUES (?,?,?)');
   db.transaction(() => { placeIds.forEach((id, i) => ins.run(code, id, i)); })();
   const url = voteUrl(req, code);
   const qrDataUrl = await QRCode.toDataURL(url, { width: 512, margin: 1 });
-  res.json({ code, title, voteUrl: url, qrDataUrl, organizerToken, expiresAt: now + ROOM_TTL_MS });
+  res.json({ code, title, voteUrl: url, qrDataUrl, organizerToken, expiresAt, eventDate });
 });
 
 app.get('/api/rooms/:code', (req, res) => {

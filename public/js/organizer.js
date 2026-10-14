@@ -10,6 +10,29 @@ function placeImgErr(el){
   if(lp && !el.dataset.fb){ el.dataset.fb = '1'; el.src = 'https://raw.githubusercontent.com/ferqui-afk/group-vote/main/public' + lp; }
   else { el.onerror = null; el.src = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="84" height="84"><rect width="84" height="84" fill="#eee"/><text x="42" y="48" font-size="28" text-anchor="middle">🍽️</text></svg>'); }
 }
+// ---- Fechas del calendario (YYYY-MM-DD, sin zona horaria) ----
+function todayLocal(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function parseYMD(s){
+  const p = String(s || '').split('-').map(Number);
+  return new Date(p[0] || 1970, (p[1] || 1) - 1, p[2] || 1);
+}
+function shortDate(ymd, lang){
+  if (!ymd) return '';
+  return parseYMD(ymd).toLocaleDateString(lang || currentLang(), { day: 'numeric', month: 'short' });
+}
+function calDateLabel(ymd, lang){
+  lang = lang || currentLang();
+  if (!ymd) return '';
+  const t0 = todayLocal();
+  if (ymd === t0) return '📅 ' + t('today');
+  const tm = parseYMD(t0); tm.setDate(tm.getDate() + 1);
+  const tmStr = tm.getFullYear() + '-' + String(tm.getMonth() + 1).padStart(2, '0') + '-' + String(tm.getDate()).padStart(2, '0');
+  if (ymd === tmStr) return '📅 ' + t('tomorrow');
+  return '📅 ' + parseYMD(ymd).toLocaleDateString(lang, { weekday: 'long', day: 'numeric', month: 'long' });
+}
 function imgTag(p){
   const src = p.image || '';
   const fb = src.startsWith('/images/') ? ` data-lp="${esc(src)}" onerror="placeImgErr(this)"` : '';
@@ -161,7 +184,7 @@ async function createVoting(){
   try {
     const r = await fetch('/api/rooms', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ title, placeIds: [...selected.keys()] })
+      body: JSON.stringify({ title, placeIds: [...selected.keys()], eventDate: ($('eventDate') && $('eventDate').value) || todayLocal() })
     });
     const data = await r.json();
     if (!r.ok) throw new Error(data.error || 'Error');
@@ -414,18 +437,56 @@ async function loadActiveRooms(){
       const mins = Math.max(0, Math.round((rm.expiresAt - Date.now()) / 60000));
       const hrs = Math.floor(mins / 60), mm = mins % 60;
       const left = hrs ? `${hrs}${t('hours_h')} ${mm}${t('minutes')}` : `${mm}${t('minutes')}`;
+      const dateChip = rm.eventDate ? ` · 📅 ${esc(shortDate(rm.eventDate))}` : '';
       return `<div class="dash-row">
         <span style="flex:1;min-width:0"><strong>${esc(rm.title)}</strong>
-          <span class="hint"> · ${rm.candidates} lugares · ${rm.votes} ${rm.votes === 1 ? t('vote_1') : t('vote_n')} · ${t('active_expires')} ${left}</span></span>
+          <span class="hint"> · ${rm.candidates} lugares · ${rm.votes} ${rm.votes === 1 ? t('vote_1') : t('vote_n')}${dateChip} · ${t('active_expires')} ${left}</span></span>
         <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">${t('active_enter')}</a>
       </div>`;
     }).join('');
   } catch(e) { /* sin conexión: se reintenta en el próximo ciclo */ }
 }
 
+// ---- Calendario: votaciones agrupadas por fecha del plan (público, para el grupo) ----
+let lastCalSig = '';
+async function loadCalendar(){
+  const list = $('calList');
+  if (!list) return;
+  try {
+    const r = await fetch('/api/calendar?days=14');
+    const d = await r.json();
+    const sig = JSON.stringify(d.rooms);
+    if (sig === lastCalSig) return; // sin cambios: no tocar el DOM
+    lastCalSig = sig;
+    if (!d.rooms.length) {
+      list.innerHTML = '<p class="hint">' + t('cal_empty') + '</p>';
+      return;
+    }
+    const groups = {};
+    d.rooms.forEach(rm => { (groups[rm.eventDate || '?'] = groups[rm.eventDate || '?'] || []).push(rm); });
+    list.innerHTML = Object.keys(groups).sort().map(ymd => {
+      const rows = groups[ymd].map(rm => {
+        const badge = rm.state === 'open'
+          ? `<span class="status open">${t('state_open')}</span>`
+          : `<span class="status closed">🏆 ${esc(rm.winnerName || t('state_closed'))}</span>`;
+        return `<div class="dash-row">
+          <span style="flex:1;min-width:0"><strong>${esc(rm.title)}</strong> ${badge}
+            <span class="hint"> · ${rm.candidates} lugares · ${rm.votes} ${rm.votes === 1 ? t('vote_1') : t('vote_n')}</span></span>
+          <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">${t('active_enter')}</a>
+        </div>`;
+      }).join('');
+      return `<p class="hint" style="margin:10px 0 4px"><strong>${esc(calDateLabel(ymd))}</strong></p>` + rows;
+    }).join('');
+  } catch(e) { /* sin conexión: se reintenta en el próximo ciclo */ }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  const ed = $('eventDate');
+  if (ed && !ed.value) ed.value = todayLocal(); // fecha del plan: hoy por defecto
   loadActiveRooms();
   setInterval(loadActiveRooms, 5000); // las nuevas aparecen solas
+  loadCalendar();
+  setInterval(loadCalendar, 30000); // el calendario cambia poco
   loadRegions();
 });
 
@@ -493,7 +554,7 @@ async function loadDashboard(){
       : (rm.winner ? `${t('won')} <strong>${esc(rm.winner.name)}</strong>` : t('no_winner'));
     return `<div class="dash-row">
       <div style="flex:1;min-width:0">
-        <div><strong>${esc(rm.title)}</strong> ${statusBadge(rm.state)} <span class="hint">· ${origin}</span></div>
+        <div><strong>${esc(rm.title)}</strong> ${statusBadge(rm.state)}${rm.eventDate ? ` <span class="hint">📅 ${esc(shortDate(rm.eventDate))}</span>` : ''} <span class="hint">· ${origin}</span></div>
         <div class="hint">${rm.totalVotes === 1 ? '1 ' + t('vote_1') : rm.totalVotes + ' ' + t('vote_n')} · ${lead}</div>
       </div>
       <a class="btn-ghost btn-small" style="text-decoration:none;white-space:nowrap" href="/v/${esc(rm.code)}">${t('dash_view')}</a>

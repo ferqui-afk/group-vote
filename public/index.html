@@ -32,9 +32,17 @@
     <div id="activeRoomsList"><p class="hint" data-i18n="active_loading">Buscando votaciones…</p></div>
   </div>
 
+  <div class="card" id="calCard">
+    <h2 style="margin:0 0 4px" data-i18n="cal_title">📅 Calendario</h2>
+    <p class="hint" style="margin:0 0 8px" data-i18n="cal_sub">Las votaciones organizadas por día — el grupo las ve todas aquí.</p>
+    <div id="calList"><p class="hint" data-i18n="cal_loading">Cargando calendario…</p></div>
+  </div>
+
   <div class="card">
     <label for="title"><strong data-i18n="step1">1. Título de la votación</strong></label>
     <input type="text" id="title" class="mt" placeholder="Ej. Cena del viernes" data-i18n-ph="title_ph" maxlength="80">
+    <label for="eventDate" class="mt" style="display:block"><strong data-i18n="event_date_label">📅 ¿Para qué día es el plan?</strong></label>
+    <input type="date" id="eventDate" class="mt">
   </div>
 
   <div class="card" id="pickMapCard">
