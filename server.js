@@ -1,6 +1,8 @@
 'use strict';
 /*
  * group-vote — votación en grupo con QR.
+ * Base de datos: Turso (remoto) si TURSO_DATABASE_URL está definido,
+ * si no SQLite local en DATA_DIR/groupvote.db. Usa @libsql/client (async).
  * Rutas:
  *   GET  /                  página del organizador
  *   GET  /v/:code           página de votación
@@ -16,7 +18,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const QRCode = require('qrcode');
-const Database = require('better-sqlite3');
+const { createClient } = require('@libsql/client');
 const multer = require('multer');
 const archiver = require('archiver');
 
@@ -28,12 +30,32 @@ const PORT = process.env.PORT || 3000;
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 fs.mkdirSync(DATA_DIR, { recursive: true });
 
-const db = new Database(path.join(DATA_DIR, 'groupvote.db'));
-db.pragma('journal_mode = WAL');
+// ---- Base de datos: Turso remoto o SQLite local ----
+const TURSO_URL = process.env.TURSO_DATABASE_URL || '';
+const TURSO_TOKEN = process.env.TURSO_AUTH_TOKEN || '';
+const dbFile = path.join(DATA_DIR, 'groupvote.db');
+const db = TURSO_URL
+  ? createClient({ url: TURSO_URL, authToken: TURSO_TOKEN || undefined })
+  : createClient({ url: 'file:' + dbFile });
+console.log('DB:', TURSO_URL ? 'Turso remoto' : 'SQLite local (' + dbFile + ')');
+
+// Helpers async sobre @libsql/client
+async function q(sql, ...args) {
+  return (await db.execute({ sql, args })).rows;
+}
+async function q1(sql, ...args) {
+  return (await db.execute({ sql, args })).rows[0];
+}
+async function run(sql, ...args) {
+  await db.execute({ sql, args });
+}
+
 function norm(s) {
   return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 }
-db.exec(`
+
+async function initDb() {
+  await db.executeMultiple(`
 CREATE TABLE IF NOT EXISTS places (
   id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT DEFAULT '',
   address TEXT DEFAULT '', lat REAL, lng REAL, hours TEXT DEFAULT '',
@@ -63,31 +85,26 @@ CREATE TABLE IF NOT EXISTS photos (
   created_at INTEGER NOT NULL
 );
 `);
-db.exec(`CREATE INDEX IF NOT EXISTS idx_photos_room ON photos(room_code);
-`);
- // Migración: agregar voter_name si la tabla ya existía sin esa columna
-if (!db.prepare('PRAGMA table_info(votes)').all().some(c => c.name === 'voter_name')) {
-  db.exec("ALTER TABLE votes ADD COLUMN voter_name TEXT DEFAULT ''");
-}
-// Migración: fecha del plan (calendario) en las salas
-if (!db.prepare('PRAGMA table_info(rooms)').all().some(c => c.name === 'event_date')) {
-  db.exec("ALTER TABLE rooms ADD COLUMN event_date TEXT DEFAULT ''");
-  // las salas viejas quedan con la fecha de su creación
-  db.exec("UPDATE rooms SET event_date = date(created_at/1000, 'unixepoch') WHERE event_date = '' OR event_date IS NULL");
-}
-db.exec(`CREATE INDEX IF NOT EXISTS idx_votes_room ON votes(room_code);
-`);
-if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'search_text')) {
-  db.exec("ALTER TABLE places ADD COLUMN search_text TEXT DEFAULT ''");
-}
-if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'hours_json')) {
-  db.exec("ALTER TABLE places ADD COLUMN hours_json TEXT DEFAULT ''");
-}
-if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'region')) {
-  db.exec("ALTER TABLE places ADD COLUMN region TEXT DEFAULT ''");
-}
-if (!db.prepare('PRAGMA table_info(places)').all().some(c => c.name === 'reel_url')) {
-  db.exec("ALTER TABLE places ADD COLUMN reel_url TEXT DEFAULT ''");
+  await db.executeMultiple(`CREATE INDEX IF NOT EXISTS idx_photos_room ON photos(room_code);`);
+  // Migración: agregar voter_name si la tabla ya existía sin esa columna
+  const voteCols = await q('PRAGMA table_info(votes)');
+  if (!voteCols.some(c => c.name === 'voter_name')) {
+    await db.executeMultiple("ALTER TABLE votes ADD COLUMN voter_name TEXT DEFAULT ''");
+  }
+  // Migración: fecha del plan (calendario) en las salas
+  const roomCols = await q('PRAGMA table_info(rooms)');
+  if (!roomCols.some(c => c.name === 'event_date')) {
+    await db.executeMultiple("ALTER TABLE rooms ADD COLUMN event_date TEXT DEFAULT ''");
+    await db.executeMultiple("UPDATE rooms SET event_date = date(created_at/1000, 'unixepoch') WHERE event_date = '' OR event_date IS NULL");
+  }
+  await db.executeMultiple(`CREATE INDEX IF NOT EXISTS idx_votes_room ON votes(room_code);`);
+  const placeCols = await q('PRAGMA table_info(places)');
+  const placeColNames = placeCols.map(c => c.name);
+  for (const col of ['search_text', 'hours_json', 'region', 'reel_url']) {
+    if (!placeColNames.includes(col)) {
+      await db.executeMultiple(`ALTER TABLE places ADD COLUMN ${col} TEXT DEFAULT ''`);
+    }
+  }
 }
 
 const ROOM_TTL_MS = 24 * 3600 * 1000;
@@ -99,10 +116,10 @@ function genCode(n = 6) {
   for (let i = 0; i < n; i++) s += CODE_ALPHABET[buf[i] % CODE_ALPHABET.length];
   return s;
 }
-function uniqueCode() {
+async function uniqueCode() {
   for (let i = 0; i < 20; i++) {
     const c = genCode();
-    if (!db.prepare('SELECT 1 FROM rooms WHERE code=?').get(c)) return c;
+    if (!await q1('SELECT 1 FROM rooms WHERE code=?', c)) return c;
   }
   return genCode(8);
 }
@@ -119,8 +136,8 @@ function voteUrl(req, code) {
   const proto = /^(localhost|127\.0\.0\.1)/.test(host) ? req.protocol : 'https';
   return proto + '://' + host + '/v/' + code;
 }
-function getRoom(code) {
-  return db.prepare('SELECT * FROM rooms WHERE code=?').get(String(code).toUpperCase());
+async function getRoom(code) {
+  return q1('SELECT * FROM rooms WHERE code=?', String(code).toUpperCase());
 }
 function roomState(room) {
   const now = Date.now();
@@ -129,18 +146,18 @@ function roomState(room) {
   if (room.closed_at) return 'closed';
   return 'open';
 }
-function roomPayload(req, room, deviceToken) {
+async function roomPayload(req, room, deviceToken) {
   const state = roomState(room);
-  const cands = db.prepare(
+  const cands = await q(
     `SELECT p.id, p.name, p.type, p.address, p.hours, p.notes, p.image, p.neighborhood, p.reel_url, p.lat, p.lng
      FROM room_candidates rc JOIN places p ON p.id = rc.place_id
-     WHERE rc.room_code=? ORDER BY rc.position`).all(room.code);
-  const counts = db.prepare(
-    'SELECT place_id, COUNT(*) AS c FROM votes WHERE room_code=? GROUP BY place_id').all(room.code);
+     WHERE rc.room_code=? ORDER BY rc.position`, room.code);
+  const counts = await q(
+    'SELECT place_id, COUNT(*) AS c FROM votes WHERE room_code=? GROUP BY place_id', room.code);
   const byId = {};
-  for (const r of counts) byId[r.place_id] = r.c;
-  const voterRows = db.prepare(
-    'SELECT place_id, voter_name FROM votes WHERE room_code=? ORDER BY created_at').all(room.code);
+  for (const r of counts) byId[r.place_id] = Number(r.c);
+  const voterRows = await q(
+    'SELECT place_id, voter_name FROM votes WHERE room_code=? ORDER BY created_at', room.code);
   const votersById = {};
   for (const r of voterRows) {
     (votersById[r.place_id] = votersById[r.place_id] || []).push(r.voter_name || '');
@@ -152,12 +169,12 @@ function roomPayload(req, room, deviceToken) {
   });
   candidates.sort((a, b) => b.votes - a.votes);
   const mine = deviceToken
-    ? db.prepare('SELECT place_id FROM votes WHERE room_code=? AND device_token=?').get(room.code, deviceToken)
+    ? await q1('SELECT place_id FROM votes WHERE room_code=? AND device_token=?', room.code, deviceToken)
     : null;
   const winner = state !== 'open' && candidates.length ? candidates[0] : null;
-  const photos = db.prepare(
-    'SELECT id, uploader_name AS uploader, url, created_at AS createdAt FROM photos WHERE room_code=? ORDER BY created_at'
-  ).all(room.code);
+  const photos = await q(
+    'SELECT id, uploader_name AS uploader, url, created_at AS createdAt FROM photos WHERE room_code=? ORDER BY created_at',
+    room.code);
   return {
     code: room.code, title: room.title, state,
     createdAt: room.created_at, expiresAt: room.expires_at, closedAt: room.closed_at,
@@ -171,40 +188,49 @@ function roomPayload(req, room, deviceToken) {
 }
 
 // Siembra inicial desde data/places.json (para el deploy, donde no está el mapa)
-function seedIfEmpty() {
-  const n = db.prepare('SELECT COUNT(*) AS c FROM places').get().c;
+async function seedIfEmpty() {
+  const row = await q1('SELECT COUNT(*) AS c FROM places');
+  const n = Number(row ? row.c : 0);
   if (n > 0) return n;
   const seedPath = path.join(__dirname, 'data', 'places.json');
   if (!fs.existsSync(seedPath)) { console.log('Sin semilla: data/places.json no existe. Corre: npm run import'); return 0; }
   const places = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
-  const ins = db.prepare(`INSERT OR REPLACE INTO places
-    (id, name, type, address, lat, lng, hours, hours_json, region, notes, image, neighborhood, search_text, reel_url)
-    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @hours_json, @region, @notes, @image, @neighborhood, @search_text, @reel_url)`);
-  db.transaction(list => {
-    for (const p of list) {
-      if (!p.search_text) p.search_text = norm([p.name, p.type, p.address, p.notes, p.neighborhood].join(' '));
-      ins.run(p);
-    }
-  })(places);
+  const stmts = [];
+  for (const p of places) {
+    if (!p.search_text) p.search_text = norm([p.name, p.type, p.address, p.notes, p.neighborhood].join(' '));
+    stmts.push({
+      sql: `INSERT OR REPLACE INTO places
+        (id, name, type, address, lat, lng, hours, hours_json, region, notes, image, neighborhood, search_text, reel_url)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      args: [p.id, p.name, p.type, p.address, p.lat, p.lng, p.hours, p.hours_json,
+             p.region, p.notes, p.image, p.neighborhood, p.search_text, p.reel_url]
+    });
+  }
+  // En lotes para no saturar el batch remoto
+  for (let i = 0; i < stmts.length; i += 200) {
+    await db.batch(stmts.slice(i, i + 200));
+  }
   console.log('Sembrados ' + places.length + ' lugares desde data/places.json');
   return places.length;
 }
-seedIfEmpty();
 
 // Limpieza periódica de salas vencidas
-setInterval(() => {
-  const cutoff = Date.now() - 3600 * 1000;
-  const old = db.prepare('SELECT code FROM rooms WHERE expires_at < ?').all(cutoff).map(r => r.code);
-  if (!old.length) return;
-  const del = db.transaction(codes => {
-    for (const c of codes) {
-      db.prepare('DELETE FROM votes WHERE room_code=?').run(c);
-      db.prepare('DELETE FROM room_candidates WHERE room_code=?').run(c);
-      db.prepare('DELETE FROM rooms WHERE code=?').run(c);
+setInterval(async () => {
+  try {
+    const cutoff = Date.now() - 3600 * 1000;
+    const old = (await q('SELECT code FROM rooms WHERE expires_at < ?', cutoff)).map(r => r.code);
+    if (!old.length) return;
+    const stmts = [];
+    for (const c of old) {
+      stmts.push({ sql: 'DELETE FROM votes WHERE room_code=?', args: [c] });
+      stmts.push({ sql: 'DELETE FROM room_candidates WHERE room_code=?', args: [c] });
+      stmts.push({ sql: 'DELETE FROM rooms WHERE code=?', args: [c] });
     }
-  });
-  del(old);
-  console.log('Limpieza: ' + old.length + ' salas vencidas eliminadas');
+    await db.batch(stmts);
+    console.log('Limpieza: ' + old.length + ' salas vencidas eliminadas');
+  } catch (e) {
+    console.log('Limpieza falló:', e.message);
+  }
 }, 3600 * 1000);
 
 // ---- Abierto ahora (horarios estructurados del mapa privado) ----
@@ -237,7 +263,7 @@ function isOpenNow(hoursJson) {
 }
 
 // ---- Lugares cercanos a un punto (para elegir por mapa) ----
-app.get('/api/places/near', (req, res) => {
+app.get('/api/places/near', async (req, res) => {
   const lat = parseFloat(req.query.lat), lng = parseFloat(req.query.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng))
     return res.status(400).json({ error: 'Faltan coordenadas' });
@@ -245,8 +271,8 @@ app.get('/api/places/near', (req, res) => {
   const openNow = req.query.openNow === '1';
   const region = String(req.query.region || '').trim();
   const regionFilter = region ? 'AND region = ?' : '';
-  const rows = db.prepare(`SELECT id, name, type, address, lat, lng, hours, hours_json, notes, image, neighborhood, reel_url
-    FROM places WHERE lat IS NOT NULL AND lng IS NOT NULL ${regionFilter}`).all(...(region ? [region] : []));
+  const rows = await q(`SELECT id, name, type, address, lat, lng, hours, hours_json, notes, image, neighborhood, reel_url
+    FROM places WHERE lat IS NOT NULL AND lng IS NOT NULL ${regionFilter}`, ...(region ? [region] : []));
   const R = 3958.8, toRad = d => d * Math.PI / 180;
   const out = [];
   for (const p of rows) {
@@ -261,14 +287,14 @@ app.get('/api/places/near', (req, res) => {
 });
 
 // ---- Eliminar votación (solo organizador) ----
-app.delete('/api/rooms/:code', (req, res) => {
-  const room = getRoom(req.params.code);
+app.delete('/api/rooms/:code', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'No encontrada' });
   const t = String((req.body && req.body.organizerToken) || '');
   if (!t || t !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
-  db.prepare('DELETE FROM votes WHERE room_code=?').run(room.code);
-  db.prepare('DELETE FROM room_candidates WHERE room_code=?').run(room.code);
-  db.prepare('DELETE FROM rooms WHERE code=?').run(room.code);
+  await run('DELETE FROM votes WHERE room_code=?', room.code);
+  await run('DELETE FROM room_candidates WHERE room_code=?', room.code);
+  await run('DELETE FROM rooms WHERE code=?', room.code);
   res.json({ ok: true });
 });
 
@@ -347,7 +373,7 @@ app.post('/api/places/resolve', async (req, res) => {
   return res.status(400).json({ error: 'Link no reconocido (usa Instagram o Google Maps)' });
 });
 
-app.post('/api/places/custom', (req, res) => {
+app.post('/api/places/custom', async (req, res) => {
   const name = String(req.body.name || '').trim().slice(0, 120);
   if (!name) return res.status(400).json({ error: 'Falta el nombre del lugar' });
   const id = 'custom-' + crypto.randomBytes(6).toString('hex');
@@ -361,75 +387,81 @@ app.post('/api/places/custom', (req, res) => {
     reel_url: String(req.body.reelUrl || '').slice(0, 300)
   };
   rec.search_text = norm([rec.name, rec.type, rec.address, rec.notes].join(' '));
-  db.prepare(`INSERT INTO places
+  await run(`INSERT INTO places
     (id, name, type, address, lat, lng, hours, notes, image, neighborhood, search_text, reel_url)
-    VALUES (@id, @name, @type, @address, @lat, @lng, @hours, @notes, @image, @neighborhood, @search_text, @reel_url)`)
-    .run(rec);
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
+    rec.id, rec.name, rec.type, rec.address, rec.lat, rec.lng, rec.hours,
+    rec.notes, rec.image, rec.neighborhood, rec.search_text, rec.reel_url);
   res.json({ place: rec });
 });
 
 // ---- API ----
-app.get('/api/places', (req, res) => {
-  const q = norm((req.query.q || '').trim());
+app.get('/api/places', async (req, res) => {
+  const qq = norm((req.query.q || '').trim());
   const region = String(req.query.region || '').trim();
   const openNow = req.query.openNow === '1';
   const regionFilter = region ? 'AND region = ?' : '';
   const params = [];
   let sql;
-  if (q) {
+  if (qq) {
     sql = `SELECT id, name, type, address, hours, hours_json, notes, image, neighborhood, reel_url, lat, lng FROM places
        WHERE search_text LIKE ? ${regionFilter} ORDER BY name LIMIT 60`;
-    params.push('%' + q.replace(/[%_]/g, '') + '%');
+    params.push('%' + qq.replace(/[%_]/g, '') + '%');
   } else {
     sql = `SELECT id, name, type, address, hours, hours_json, notes, image, neighborhood, reel_url, lat, lng FROM places
        WHERE 1=1 ${regionFilter} ORDER BY name LIMIT 60`;
   }
   if (region) params.push(region);
-  let places = db.prepare(sql).all(...params);
+  let places = await q(sql, ...params);
   if (openNow) places = places.filter(p => isOpenNow(p.hours_json));
   res.json({ places: places.map(({ hours_json, ...p }) => p) });
 });
 
 // ---- Votaciones en curso (lista pública, se actualiza en vivo) ----
-app.get('/api/rooms/active', (req, res) => {
+app.get('/api/rooms/active', async (req, res) => {
   const now = Date.now();
-  const rooms = db.prepare(`SELECT code, title, created_at, expires_at, closed_at, event_date FROM rooms
-    WHERE expires_at > ? AND closed_at IS NULL ORDER BY event_date, created_at DESC`).all(now);
-  const out = rooms.map(r => ({
-    code: r.code, title: r.title,
-    createdAt: r.created_at, expiresAt: r.expires_at, eventDate: r.event_date || null,
-    candidates: db.prepare('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?').get(r.code).c,
-    votes: db.prepare('SELECT COUNT(*) AS c FROM votes WHERE room_code=?').get(r.code).c
-  }));
+  const rooms = await q(`SELECT code, title, created_at, expires_at, closed_at, event_date FROM rooms
+    WHERE expires_at > ? AND closed_at IS NULL ORDER BY event_date, created_at DESC`, now);
+  const out = [];
+  for (const r of rooms) {
+    const cRow = await q1('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?', r.code);
+    const vRow = await q1('SELECT COUNT(*) AS c FROM votes WHERE room_code=?', r.code);
+    out.push({
+      code: r.code, title: r.title,
+      createdAt: r.created_at, expiresAt: r.expires_at, eventDate: r.event_date || null,
+      candidates: Number(cRow.c), votes: Number(vRow.c)
+    });
+  }
   res.json({ rooms: out });
 });
 
 // ---- Calendario: votaciones (abiertas y cerradas) agrupadas por fecha del plan ----
-app.get('/api/calendar', (req, res) => {
+app.get('/api/calendar', async (req, res) => {
   const days = Math.min(60, Math.max(1, parseInt(req.query.days, 10) || 14));
   let from = String(req.query.from || '').trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(from)) from = new Date().toISOString().slice(0, 10);
   const to = new Date(Date.parse(from + 'T00:00:00Z') + days * 24 * 3600 * 1000).toISOString().slice(0, 10);
   const now = Date.now();
-  const rooms = db.prepare(
+  const rooms = await q(
     `SELECT code, title, event_date, created_at, expires_at, closed_at FROM rooms
-     WHERE event_date >= ? AND event_date < ? ORDER BY event_date, created_at`).all(from, to);
+     WHERE event_date >= ? AND event_date < ? ORDER BY event_date, created_at`, from, to);
   const out = [];
   for (const r of rooms) {
     const state = now > r.expires_at ? 'expired' : (r.closed_at ? 'closed' : 'open');
     if (state === 'expired') continue;
     let winnerName = null;
     if (state === 'closed') {
-      const w = db.prepare(
+      const w = await q1(
         `SELECT p.name FROM votes v JOIN places p ON p.id = v.place_id
-         WHERE v.room_code=? GROUP BY v.place_id ORDER BY COUNT(*) DESC LIMIT 1`).get(r.code);
+         WHERE v.room_code=? GROUP BY v.place_id ORDER BY COUNT(*) DESC LIMIT 1`, r.code);
       winnerName = w ? w.name : null;
     }
+    const cRow = await q1('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?', r.code);
+    const vRow = await q1('SELECT COUNT(*) AS c FROM votes WHERE room_code=?', r.code);
     out.push({
       code: r.code, title: r.title, eventDate: r.event_date,
       state,
-      candidates: db.prepare('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?').get(r.code).c,
-      votes: db.prepare('SELECT COUNT(*) AS c FROM votes WHERE room_code=?').get(r.code).c,
+      candidates: Number(cRow.c), votes: Number(vRow.c),
       winnerName
     });
   }
@@ -445,21 +477,22 @@ const REGION_LABELS = {
   losangeles: 'Los Ángeles', philly: 'Filadelfia', tampa: 'Tampa',
   stpete: 'St. Pete'
 };
-app.get('/api/regions', (req, res) => {
-  const rows = db.prepare(`SELECT region, COUNT(*) AS count, AVG(lat) AS lat, AVG(lng) AS lng
-    FROM places WHERE region IS NOT NULL AND region != '' AND lat IS NOT NULL GROUP BY region ORDER BY count DESC`).all();
+app.get('/api/regions', async (req, res) => {
+  const rows = await q(`SELECT region, COUNT(*) AS count, AVG(lat) AS lat, AVG(lng) AS lng
+    FROM places WHERE region IS NOT NULL AND region != '' AND lat IS NOT NULL GROUP BY region ORDER BY count DESC`);
   res.json({ regions: rows.map(r => ({
     id: r.region, label: REGION_LABELS[r.region] || r.region,
-    count: r.count, lat: Math.round(r.lat * 10000) / 10000, lng: Math.round(r.lng * 10000) / 10000
+    count: Number(r.count), lat: Math.round(r.lat * 10000) / 10000, lng: Math.round(r.lng * 10000) / 10000
   })) });
 });
-app.post('/api/rooms', async (req, res) => {  const title = String(req.body.title || '').trim().slice(0, 80);
+app.post('/api/rooms', async (req, res) => {
+  const title = String(req.body.title || '').trim().slice(0, 80);
   const placeIds = Array.isArray(req.body.placeIds) ? [...new Set(req.body.placeIds.map(String))].slice(0, 12) : [];
   if (!title) return res.status(400).json({ error: 'Falta el título' });
   if (placeIds.length < 2) return res.status(400).json({ error: 'Elige al menos 2 lugares' });
-  const ok = db.prepare(`SELECT COUNT(*) AS c FROM places WHERE id IN (${placeIds.map(() => '?').join(',')})`).get(...placeIds).c;
-  if (ok !== placeIds.length) return res.status(400).json({ error: 'Algún lugar no existe' });
-  const code = uniqueCode();
+  const okRow = await q1(`SELECT COUNT(*) AS c FROM places WHERE id IN (${placeIds.map(() => '?').join(',')})`, ...placeIds);
+  if (Number(okRow.c) !== placeIds.length) return res.status(400).json({ error: 'Algún lugar no existe' });
+  const code = await uniqueCode();
   const organizerToken = crypto.randomBytes(16).toString('hex');
   const now = Date.now();
   // Fecha del plan (calendario): la sala vive hasta el fin del día del plan + 1 día de margen
@@ -468,82 +501,86 @@ app.post('/api/rooms', async (req, res) => {  const title = String(req.body.titl
   if (!/^\d{4}-\d{2}-\d{2}$/.test(eventDate) || isNaN(Date.parse(eventDate + 'T00:00:00Z'))) eventDate = todayStr;
   if (eventDate < todayStr) eventDate = todayStr;
   const expiresAt = Date.parse(eventDate + 'T00:00:00Z') + 2 * 24 * 3600 * 1000;
-  db.prepare('INSERT INTO rooms (code, title, created_at, expires_at, organizer_token, event_date) VALUES (?,?,?,?,?,?)')
-    .run(code, title, now, expiresAt, organizerToken, eventDate);
-  const ins = db.prepare('INSERT INTO room_candidates (room_code, place_id, position) VALUES (?,?,?)');
-  db.transaction(() => { placeIds.forEach((id, i) => ins.run(code, id, i)); })();
+  await run('INSERT INTO rooms (code, title, created_at, expires_at, organizer_token, event_date) VALUES (?,?,?,?,?,?)',
+    code, title, now, expiresAt, organizerToken, eventDate);
+  const stmts = placeIds.map((id, i) => ({
+    sql: 'INSERT INTO room_candidates (room_code, place_id, position) VALUES (?,?,?)',
+    args: [code, id, i]
+  }));
+  await db.batch(stmts);
   const url = voteUrl(req, code);
   const qrDataUrl = await QRCode.toDataURL(url, { width: 512, margin: 1 });
   res.json({ code, title, voteUrl: url, qrDataUrl, organizerToken, expiresAt, eventDate });
 });
 
-app.get('/api/rooms/:code', (req, res) => {
-  const room = getRoom(req.params.code);
+app.get('/api/rooms/:code', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   const token = getDeviceToken(req, res);
-  res.json(roomPayload(req, room, token));
+  res.json(await roomPayload(req, room, token));
 });
 
-app.post('/api/rooms/:code/vote', (req, res) => {
-  const room = getRoom(req.params.code);
+app.post('/api/rooms/:code/vote', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (roomState(room) !== 'open') return res.status(409).json({ error: 'La votación está cerrada' });
   const placeId = String(req.body.placeId || '');
   const voterName = String(req.body.name || '').slice(0, 40).trim();
-  const isCandidate = db.prepare('SELECT 1 FROM room_candidates WHERE room_code=? AND place_id=?').get(room.code, placeId);
+  const isCandidate = await q1('SELECT 1 FROM room_candidates WHERE room_code=? AND place_id=?', room.code, placeId);
   if (!isCandidate) return res.status(400).json({ error: 'Candidato inválido' });
   const token = getDeviceToken(req, res);
-  db.prepare(`INSERT INTO votes (room_code, device_token, place_id, created_at, voter_name) VALUES (?,?,?,?,?)
-              ON CONFLICT(room_code, device_token) DO UPDATE SET place_id=excluded.place_id, created_at=excluded.created_at, voter_name=excluded.voter_name`)
-    .run(room.code, token, placeId, Date.now(), voterName);
-  res.json(roomPayload(req, room, token));
+  await run(`INSERT INTO votes (room_code, device_token, place_id, created_at, voter_name) VALUES (?,?,?,?,?)
+              ON CONFLICT(room_code, device_token) DO UPDATE SET place_id=excluded.place_id, created_at=excluded.created_at, voter_name=excluded.voter_name`,
+    room.code, token, placeId, Date.now(), voterName);
+  res.json(await roomPayload(req, room, token));
 });
 
-app.post('/api/rooms/:code/close', (req, res) => {
-  const room = getRoom(req.params.code);
+app.post('/api/rooms/:code/close', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (req.body.organizerToken !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
-  if (!room.closed_at) db.prepare('UPDATE rooms SET closed_at=? WHERE code=?').run(Date.now(), room.code);
-  const fresh = getRoom(room.code);
-  res.json(roomPayload(req, fresh, getDeviceToken(req, res)));
+  if (!room.closed_at) await run('UPDATE rooms SET closed_at=? WHERE code=?', Date.now(), room.code);
+  const fresh = await getRoom(room.code);
+  res.json(await roomPayload(req, fresh, getDeviceToken(req, res)));
 });
 
-app.post('/api/rooms/:code/reopen', (req, res) => {
-  const room = getRoom(req.params.code);
+app.post('/api/rooms/:code/reopen', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (req.body.organizerToken !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
   // Reabre con 24 h frescas desde ahora, conservando los votos que ya había
-  db.prepare('UPDATE rooms SET closed_at=NULL, expires_at=? WHERE code=?').run(Date.now() + 24 * 3600 * 1000, room.code);
-  const fresh = getRoom(room.code);
-  res.json(roomPayload(req, fresh, getDeviceToken(req, res)));
+  await run('UPDATE rooms SET closed_at=NULL, expires_at=? WHERE code=?', Date.now() + 24 * 3600 * 1000, room.code);
+  const fresh = await getRoom(room.code);
+  res.json(await roomPayload(req, fresh, getDeviceToken(req, res)));
 });
 
 // ---- Editar candidatos de una votación abierta (solo organizador) ----
-app.post('/api/rooms/:code/candidates', (req, res) => {
-  const room = getRoom(req.params.code);
+app.post('/api/rooms/:code/candidates', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (req.body.organizerToken !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
   if (roomState(room) !== 'open') return res.status(409).json({ error: 'La votación está cerrada' });
   const placeId = String(req.body.placeId || '');
-  const exists = db.prepare('SELECT 1 FROM places WHERE id=?').get(placeId);
+  const exists = await q1('SELECT 1 FROM places WHERE id=?', placeId);
   if (!exists) return res.status(400).json({ error: 'Lugar no existe' });
-  const dup = db.prepare('SELECT 1 FROM room_candidates WHERE room_code=? AND place_id=?').get(room.code, placeId);
+  const dup = await q1('SELECT 1 FROM room_candidates WHERE room_code=? AND place_id=?', room.code, placeId);
   if (dup) return res.status(409).json({ error: 'Ya está en la votación' });
-  const n = db.prepare('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?').get(room.code).c;
+  const nRow = await q1('SELECT COUNT(*) AS c FROM room_candidates WHERE room_code=?', room.code);
+  const n = Number(nRow.c);
   if (n >= 12) return res.status(409).json({ error: 'Máximo 12 lugares' });
-  db.prepare('INSERT INTO room_candidates (room_code, place_id, position) VALUES (?,?,?)').run(room.code, placeId, n);
-  res.json(roomPayload(req, room, getDeviceToken(req, res)));
+  await run('INSERT INTO room_candidates (room_code, place_id, position) VALUES (?,?,?)', room.code, placeId, n);
+  res.json(await roomPayload(req, room, getDeviceToken(req, res)));
 });
 
-app.delete('/api/rooms/:code/candidates/:placeId', (req, res) => {
-  const room = getRoom(req.params.code);
+app.delete('/api/rooms/:code/candidates/:placeId', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (req.body.organizerToken !== room.organizer_token) return res.status(403).json({ error: 'No autorizado' });
   if (roomState(room) !== 'open') return res.status(409).json({ error: 'La votación está cerrada' });
-  const votes = db.prepare('SELECT COUNT(*) AS c FROM votes WHERE room_code=? AND place_id=?').get(room.code, req.params.placeId).c;
-  if (votes > 0) return res.status(409).json({ error: 'Tiene votos, no se puede quitar' });
-  db.prepare('DELETE FROM room_candidates WHERE room_code=? AND place_id=?').run(room.code, req.params.placeId);
-  res.json(roomPayload(req, room, getDeviceToken(req, res)));
+  const vRow = await q1('SELECT COUNT(*) AS c FROM votes WHERE room_code=? AND place_id=?', room.code, req.params.placeId);
+  if (Number(vRow.c) > 0) return res.status(409).json({ error: 'Tiene votos, no se puede quitar' });
+  await run('DELETE FROM room_candidates WHERE room_code=? AND place_id=?', room.code, req.params.placeId);
+  res.json(await roomPayload(req, room, getDeviceToken(req, res)));
 });
 
 // ---- Fotos de la experiencia (solo cuando la votación está cerrada) ----
@@ -627,19 +664,19 @@ async function externalUpload(buf, filename) {
   throw new Error('no se pudo subir la foto a ningún host');
 }
 app.post('/api/rooms/:code/photos', upload.array('photos', 6), async (req, res) => {
-  const room = getRoom(req.params.code);
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (roomState(room) === 'open') return res.status(409).json({ error: 'La votación sigue abierta' });
   const files = (req.files || []).filter(f => f.mimetype && f.mimetype.startsWith('image/'));
   if (!files.length) return res.status(400).json({ error: 'Sin fotos válidas' });
   const name = String(req.body.name || '').slice(0, 40).trim();
   const out = [];
-  const ins = db.prepare('INSERT INTO photos (id, room_code, uploader_name, url, created_at) VALUES (?,?,?,?,?)');
   for (const f of files) {
     try {
       const url = await externalUpload(f.buffer, f.originalname);
       const id = crypto.randomBytes(8).toString('hex');
-      ins.run(id, room.code, name, url, Date.now());
+      await run('INSERT INTO photos (id, room_code, uploader_name, url, created_at) VALUES (?,?,?,?,?)',
+        id, room.code, name, url, Date.now());
       out.push({ id, uploader: name, url });
     } catch (e) {
       return res.status(502).json({ error: 'No se pudo subir la foto' });
@@ -647,20 +684,20 @@ app.post('/api/rooms/:code/photos', upload.array('photos', 6), async (req, res) 
   }
   res.json({ photos: out });
 });
-app.delete('/api/rooms/:code/photos/:id', (req, res) => {
-  const room = getRoom(req.params.code);
+app.delete('/api/rooms/:code/photos/:id', async (req, res) => {
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (String((req.body && req.body.organizerToken) || '') !== room.organizer_token)
     return res.status(403).json({ error: 'No autorizado' });
-  db.prepare('DELETE FROM photos WHERE id=? AND room_code=?').run(req.params.id, room.code);
+  await run('DELETE FROM photos WHERE id=? AND room_code=?', req.params.id, room.code);
   res.json({ ok: true });
 });
 app.get('/api/rooms/:code/photos.zip', async (req, res) => {
-  const room = getRoom(req.params.code);
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).json({ error: 'Sala no encontrada' });
   if (String(req.query.token || '') !== room.organizer_token)
     return res.status(403).json({ error: 'No autorizado' });
-  const photos = db.prepare('SELECT id, url FROM photos WHERE room_code=? ORDER BY created_at').all(room.code);
+  const photos = await q('SELECT id, url FROM photos WHERE room_code=? ORDER BY created_at', room.code);
   res.type('zip');
   res.set('Content-Disposition', 'attachment; filename="fotos-' + room.code + '.zip"');
   const archive = archiver('zip', { zlib: { level: 9 } });
@@ -677,7 +714,7 @@ app.get('/api/rooms/:code/photos.zip', async (req, res) => {
 });
 
 app.get('/api/rooms/:code/qr.png', async (req, res) => {
-  const room = getRoom(req.params.code);
+  const room = await getRoom(req.params.code);
   if (!room) return res.status(404).send('Sala no encontrada');
   const buf = await QRCode.toBuffer(voteUrl(req, room.code), { width: 512, margin: 1 });
   res.type('png').send(buf);
@@ -688,4 +725,9 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.get('/v/:code', (req, res) => res.sendFile(path.join(__dirname, 'public', 'vote.html')));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.listen(PORT, () => console.log('group-vote escuchando en puerto ' + PORT));
+// ---- Arranque ----
+(async () => {
+  await initDb();
+  await seedIfEmpty();
+  app.listen(PORT, () => console.log('group-vote escuchando en puerto ' + PORT));
+})().catch(e => { console.error('Arranque falló:', e); process.exit(1); });
