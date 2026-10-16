@@ -355,6 +355,12 @@ async function loadNearby(fit){
     if (pickCircle) pickMap.removeLayer(pickCircle);
     if (pickCenterDot) pickMap.removeLayer(pickCenterDot);
     pickCircle = null; pickCenterDot = null;
+    // El punto azul del centro siempre se dibuja, haya búsqueda o no
+    pickCircle = L.circle([pickCenter.lat, pickCenter.lng], {
+      radius: miles * 1609.34, color: '#c96f2e', weight: 1.5, fillOpacity: 0.07 }).addTo(pickMap);
+    pickCenterDot = L.marker([pickCenter.lat, pickCenter.lng], {
+      icon: L.divIcon({ className: '', html: '<div class="me-dot" style="width:14px;height:14px"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
+    }).addTo(pickMap).bindPopup(t('search_center'));
     const q = $('search').value.trim();
     if (q) {
       // Búsqueda activa: el mapa muestra solo los resultados de la búsqueda
@@ -362,11 +368,6 @@ async function loadNearby(fit){
       fitToPins();
       return;
     }
-    pickCircle = L.circle([pickCenter.lat, pickCenter.lng], {
-      radius: miles * 1609.34, color: '#c96f2e', weight: 1.5, fillOpacity: 0.07 }).addTo(pickMap);
-    pickCenterDot = L.marker([pickCenter.lat, pickCenter.lng], {
-      icon: L.divIcon({ className: '', html: '<div class="me-dot" style="width:14px;height:14px"></div>', iconSize: [14, 14], iconAnchor: [7, 7] })
-    }).addTo(pickMap).bindPopup(t('search_center'));
     drawPins(data.places);
     if (fit) pickMap.fitBounds(pickCircle.getBounds().pad(0.05));
   } catch(e){ $('countHint').textContent = t('map_load_fail'); }
@@ -415,10 +416,14 @@ function initPickMap(){
     $('geoBtn').disabled = true;
     navigator.geolocation.getCurrentPosition(pos => {
       pickCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      loadNearby(true);
+      loadNearby(true).then(() => {
+        // Centrar el mapa en la ubicación del usuario con el punto azul visible
+        pickMap.setView([pickCenter.lat, pickCenter.lng], Math.max(pickMap.getZoom(), 14), { animate: true });
+        if (pickCenterDot) pickCenterDot.openPopup();
+      });
       seedCarousel();
       $('geoBtn').disabled = false;
-    }, () => { alert(t('link_no_loc')); $('geoBtn').disabled = false; }, { timeout: 10000 });
+    }, () => { alert(t('link_no_loc')); $('geoBtn').disabled = false; }, { timeout: 10000, enableHighAccuracy: true });
   });
   loadNearby(true);
 }
