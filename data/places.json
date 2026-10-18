@@ -17614,5 +17614,21 @@
   "region": "orlando",
   "city": "Orlando",
   "reel_url": "https://www.instagram.com/reel/Dej5NfxpA9D/"
+ },
+ {
+  "id": "orlando-20261018-legend-sushi-ayce",
+  "name": "Legend Sushi Orlando AYCE",
+  "type": "Restaurante de sushi",
+  "address": "5300 S Kirkman Rd, Orlando, FL 32819, USA",
+  "lat": 28.48545,
+  "lng": -81.45936,
+  "hours": "dom 12:00 PM–10:00 PM; lun–jue 11:30 AM–10:00 PM; vie–sáb 11:30 AM–10:30 PM",
+  "hours_json": "{\"tz\": \"America/New_York\", \"periods\": {\"0\": [[720, 1320]], \"1\": [[690, 1320]], \"2\": [[690, 1320]], \"3\": [[690, 1320]], \"4\": [[690, 1320]], \"5\": [[690, 1350]], \"6\": [[690, 1350]]}}",
+  "notes": "AYCE de sushi a menos de una milla de Universal; también a la carta. Almuerzo $22.95 lun–vie (11:30 AM–3:30 PM), cena $35.95 desde las 3:30 PM; sáb/dom $35.95 todo el día.",
+  "image": "",
+  "neighborhood": "Orlando",
+  "region": "orlando",
+  "city": "Orlando",
+  "reel_url": "https://www.instagram.com/reel/Db1MruKBkSs/"
  }
 ]
