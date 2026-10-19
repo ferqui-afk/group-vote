@@ -17726,5 +17726,21 @@
   "region": "pr",
   "city": "Río Grande",
   "reel_url": "https://www.instagram.com/reel/Dem1hBziXVP/"
+ },
+ {
+  "id": "433-restaurante",
+  "name": "433 Restaurante",
+  "type": "Restaurante / Grill & Wine",
+  "address": "Balcarce 433, San Telmo, Buenos Aires",
+  "lat": -34.612857,
+  "lng": -58.370769,
+  "hours": "lun–sáb 7:30 PM–12:00 AM",
+  "hours_json": "",
+  "notes": "Dentro del histórico Michelangelo; cocina argentina con selección de vinos. Ideal antes del show de tango.",
+  "image": "",
+  "neighborhood": "San Telmo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DbWTWMTsAao/"
  }
 ]
