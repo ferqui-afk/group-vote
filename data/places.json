@@ -3325,7 +3325,7 @@
   "neighborhood": "Palermo",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/reel/DVUZQCJAVOr/"
+  "reel_url": "https://www.instagram.com/reel/DZbVskbsMpS/"
  },
  {
   "id": "p19",
@@ -17630,5 +17630,53 @@
   "region": "orlando",
   "city": "Orlando",
   "reel_url": "https://www.instagram.com/reel/Db1MruKBkSs/"
+ },
+ {
+  "id": "cochinchina",
+  "name": "CoChinChina",
+  "type": "Bar / Cocina franco-vietnamita",
+  "address": "Armenia 1540, Palermo, Buenos Aires",
+  "lat": -34.590395,
+  "lng": -58.428958,
+  "hours": "lun–mié 7:00 PM–2:00 AM, jue–sáb 7:00 PM–3:00 AM",
+  "hours_json": "",
+  "notes": "Bar de Inés de los Santos; #56 en The World's 50 Best Bars 2026. Cocina franco-vietnamita y coctelería de autor.",
+  "image": "",
+  "neighborhood": "Palermo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DZbVskbsMpS/"
+ },
+ {
+  "id": "posdata-bar-postal",
+  "name": "Posdata Bar Postal",
+  "type": "Bar / Café postal",
+  "address": "Presidente Manuel Quintana 48, Buenos Aires",
+  "lat": -34.592253,
+  "lng": -58.385433,
+  "hours": "lun–jue 8:00 AM–8:00 PM, vie 8:00 AM–1:00 AM, sáb 9:30 AM–1:00 AM",
+  "hours_json": "",
+  "notes": "Primer bar postal de Argentina; funciona dentro de una estación del Correo Argentino donde podés enviar cartas. Vinos, coctelería, empanadas y tablas; opciones celíacas y vegetarianas.",
+  "image": "",
+  "neighborhood": "Retiro",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DZbVskbsMpS/"
+ },
+ {
+  "id": "winston-club",
+  "name": "Winston Club",
+  "type": "Bar museo / Speakeasy",
+  "address": "Guido 1962, Recoleta, Buenos Aires",
+  "lat": -34.588789,
+  "lng": -58.391627,
+  "hours": "lun–sáb 7:00 PM–12:30 AM",
+  "hours_json": "",
+  "notes": "Bar museo de estilo inglés con antigüedades; menú por pasos y cocina en vivo; jueves noches de jazz.",
+  "image": "",
+  "neighborhood": "Recoleta",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DZbVskbsMpS/"
  }
 ]
