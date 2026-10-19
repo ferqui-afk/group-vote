@@ -17678,5 +17678,53 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DZbVskbsMpS/"
+ },
+ {
+  "id": "allenby",
+  "name": "Allenby",
+  "type": "Restaurante",
+  "address": "Vicente López 2050, Recoleta, Buenos Aires, Argentina",
+  "lat": -34.58924208,
+  "lng": -58.39388924,
+  "hours": "todos los días 9:00 AM–12:00 AM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[540, 1440]], \"1\": [[540, 1440]], \"2\": [[540, 1440]], \"3\": [[540, 1440]], \"4\": [[540, 1440]], \"5\": [[540, 1440]], \"6\": [[540, 1440]]}}",
+  "notes": "Cocina del este del Mediterráneo (Israel, Grecia, Marruecos, Libia); famoso por su sándwich de pastrami, hummus con setas y fainá con burrata; opciones vegetarianas y sin gluten; terraza exterior",
+  "image": "",
+  "neighborhood": "Recoleta",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DepzjS2paPX/"
+ },
+ {
+  "id": "arasibo-steakhouse-boutique",
+  "name": "Arasibo Steakhouse Boutique",
+  "type": "Steakhouse",
+  "address": "Calle Gonzalo Marín 109, Arecibo, PR 00612 (frente a la Plaza Pública)",
+  "lat": 18.47167602,
+  "lng": -66.71607522,
+  "hours": "dom 12:00 PM–9:00 PM; mié–vie 5:00 PM–10:00 PM; sáb 12:00 PM–10:00 PM",
+  "hours_json": "{\"tz\": \"America/Puerto_Rico\", \"periods\": {\"0\": [[720, 1260]], \"3\": [[1020, 1320]], \"4\": [[1020, 1320]], \"5\": [[1020, 1320]], \"6\": [[720, 1320]]}}",
+  "notes": "Tabla de cortes prime (Mignon, Ribeye, New York, Churrasco, Picanha); carnicería boutique con USDA Choice, USDA Prime y Wagyu A5; coctelería creativa; rating 4.3",
+  "image": "",
+  "neighborhood": "Arecibo",
+  "region": "pr",
+  "city": "Arecibo",
+  "reel_url": "https://www.instagram.com/reel/DeCQexoDbMS/"
+ },
+ {
+  "id": "brew-taller-experimental",
+  "name": "Brew Taller Experimental",
+  "type": "Cervecería",
+  "address": "Carr. 3 km 26.2, Bo. Jiménez Local #2, Río Grande, PR",
+  "lat": 18.37408681,
+  "lng": -65.81731954,
+  "hours": "dom 2:00 PM–7:00 PM; vie 4:00 PM–9:00 PM; sáb 2:00 PM–9:00 PM",
+  "hours_json": "{\"tz\": \"America/Puerto_Rico\", \"periods\": {\"0\": [[840, 1140]], \"5\": [[960, 1260]], \"6\": [[840, 1260]]}}",
+  "notes": "Microcervecera experimental liderada por una mujer; cultivan su propia levadura salvaje en Río Grande; cervezas con producto puertorriqueño",
+  "image": "",
+  "neighborhood": "Bo. Jiménez",
+  "region": "pr",
+  "city": "Río Grande",
+  "reel_url": "https://www.instagram.com/reel/Dem1hBziXVP/"
  }
 ]
