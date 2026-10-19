@@ -17742,5 +17742,21 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DbWTWMTsAao/"
+ },
+ {
+  "id": "lynoras-italian-melbourne",
+  "name": "Lynora's Italian Restaurant",
+  "type": "Restaurante italiano",
+  "address": "529 E New Haven Ave, Melbourne, FL",
+  "lat": 28.078242,
+  "lng": -80.611786,
+  "hours": "Abre el 28 de octubre",
+  "hours_json": "",
+  "notes": "Apertura el 28 de octubre en Downtown Melbourne. Italiano familiar del sur de la Florida: pizzas a leña, pastas caseras, coctelería. Patio exterior y bar.",
+  "image": "",
+  "neighborhood": "Downtown Melbourne",
+  "region": "spacecoast",
+  "city": "Melbourne",
+  "reel_url": "https://www.facebook.com/reel/1459183689431163/"
  }
 ]
