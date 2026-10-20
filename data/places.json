@@ -6456,28 +6456,12 @@
   "lng": -81.34387,
   "hours": "dom 11:00 AM–8:00 PM; jue 11:00 AM–8:00 PM; vie–sáb 11:00 AM–9:00 PM",
   "hours_json": "{\"tz\": \"America/New_York\", \"periods\": {\"0\": [[660, 1200]], \"4\": [[660, 1200]], \"5\": [[660, 1260]], \"6\": [[660, 1260]]}}",
-  "notes": "Fusión asiática y latina; mofongo y arroz chino",
+  "notes": "Fusión puertorriqueña-asiática; mofongo, lo mein, pinchos, potato balls, cuerno beef eggroll, churrasco; casi 5 estrellas en Google; patio acogedor.",
   "image": "",
   "neighborhood": "Orlando",
   "region": "orlando",
   "city": "",
   "reel_url": "https://www.instagram.com/reel/DFnjWRuxMz4/"
- },
- {
-  "id": "or99",
-  "name": "El Coqui Ninja Restaurant",
-  "type": "Puertorriqueña",
-  "address": "3097 Curry Ford Rd, Orlando, FL 32806",
-  "lat": 28.52438,
-  "lng": -81.34387,
-  "hours": "dom 11:00 AM–8:00 PM; jue 11:00 AM–8:00 PM; vie–sáb 11:00 AM–9:00 PM",
-  "hours_json": "{\"tz\": \"America/New_York\", \"periods\": {\"0\": [[660, 1200]], \"4\": [[660, 1200]], \"5\": [[660, 1260]], \"6\": [[660, 1260]]}}",
-  "notes": "Mofongo, lo mein, pinchos, potato balls; casi 5 estrellas en Google",
-  "image": "",
-  "neighborhood": "Orlando",
-  "region": "orlando",
-  "city": "",
-  "reel_url": "https://www.instagram.com/reel/DKp3YQ1Ps7o/"
  },
  {
   "id": "or15",
@@ -17582,22 +17566,6 @@
   "region": "pr",
   "city": "Aguada",
   "reel_url": "https://www.instagram.com/reel/Dd8vs6JtpDz/"
- },
- {
-  "id": "orlando-20261018-el-coqui-ninja",
-  "name": "El Coqui Ninja Restaurant",
-  "type": "Restaurante",
-  "address": "3097 Curry Ford Rd, Orlando, FL 32806, USA",
-  "lat": 28.524487,
-  "lng": -81.343936,
-  "hours": "dom y jue 11:00 AM–8:00 PM; vie–sáb 11:00 AM–9:00 PM",
-  "hours_json": "{\"tz\": \"America/New_York\", \"periods\": {\"0\": [[660, 1200]], \"4\": [[660, 1200]], \"5\": [[660, 1260]], \"6\": [[660, 1260]]}}",
-  "notes": "Restaurante de fusión puertorriqueña y asiática; platos como mofongo, cuerno beef eggroll y churrasco; patio acogedor.",
-  "image": "",
-  "neighborhood": "Orlando",
-  "region": "orlando",
-  "city": "Orlando",
-  "reel_url": "https://www.instagram.com/reel/Deadw6Eh_J2/"
  },
  {
   "id": "orlando-20261018-tap-room-dubsdread",
