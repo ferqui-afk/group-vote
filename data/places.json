@@ -17774,5 +17774,21 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DesXMwSq7uX/"
+ },
+ {
+  "id": "kuro-neko",
+  "name": "Kuro Neko",
+  "type": "Sushi / Nikkei",
+  "address": "Paraguay 831, Retiro, Buenos Aires",
+  "lat": -34.597526,
+  "lng": -58.37892,
+  "hours": "lun–sáb 12:00 PM–12:00 AM",
+  "hours_json": "",
+  "notes": "Bar nikkei de Raúl Zorrilla; nori tacos y Box Polanco (10 piezas de sushi + 30g de caviar, $99.000 para 2). Coctelería de autor.",
+  "image": "",
+  "neighborhood": "Retiro",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DesKihPP8Kc/"
  }
 ]
