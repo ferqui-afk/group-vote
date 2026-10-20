@@ -17886,5 +17886,21 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DesNBcos4dy/"
+ },
+ {
+  "id": "29-noventa-belgrano",
+  "name": "29 Noventa",
+  "type": "Restaurante",
+  "address": "Echeverría 2990, Belgrano R, Buenos Aires",
+  "lat": -34.56621,
+  "lng": -58.46128,
+  "hours": "cenas todos los días desde 7 PM; almuerzos vie–dom 12–4 PM",
+  "hours_json": "",
+  "notes": "Casona reciclada en Belgrano R con patio interno y bar en el primer piso; famoso por su pastel de papa (el más pedido), lasagna y milanesa. Desde $30.000 por persona.",
+  "image": "",
+  "neighborhood": "Belgrano",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DesjOqrTQy9/"
  }
 ]
