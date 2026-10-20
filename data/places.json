@@ -17870,5 +17870,21 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DesjOqrTQy9/"
+ },
+ {
+  "id": "mucho-belgrano",
+  "name": "Mucho",
+  "type": "Cafetería / Brunch",
+  "address": "Conesa 2686, Belgrano, Buenos Aires",
+  "lat": -34.56022,
+  "lng": -58.46675,
+  "hours": "todos los días hasta 8 PM",
+  "hours_json": "",
+  "notes": "Cafetería aesthetic de Belgrano, pet-friendly; french toast ($19.900), sándwich de brisket ($24.000), cheesecake de frambuesa y pistacho ($16.800). Nueva sucursal en Palermo anunciada (dirección aún no publicada).",
+  "image": "",
+  "neighborhood": "Belgrano",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/Deusqi9sEZl/"
  }
 ]
