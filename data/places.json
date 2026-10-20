@@ -17758,5 +17758,21 @@
   "region": "spacecoast",
   "city": "Melbourne",
   "reel_url": "https://www.facebook.com/reel/1459183689431163/"
+ },
+ {
+  "id": "punto-mona",
+  "name": "Punto Mona",
+  "type": "Bar / Coctelería de autor",
+  "address": "Fraga 93, Chacarita, Buenos Aires",
+  "lat": -34.587164,
+  "lng": -58.446702,
+  "hours": "jue 6:00 PM–2:00 AM, vie 6:00 PM–3:00 AM, sáb 7:00 PM–3:00 AM",
+  "hours_json": "",
+  "notes": "Bar de Mona Gallosi (50 Best Discovery); coctelería de autor desde $16.000, platitos para compartir. DJ de noche, se transforma en fiesta.",
+  "image": "",
+  "neighborhood": "Chacarita",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DesXMwSq7uX/"
  }
 ]
