@@ -17790,5 +17790,21 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DesKihPP8Kc/"
+ },
+ {
+  "id": "weiss-burger-palermo",
+  "name": "Weiss Burger",
+  "type": "Hamburguesería",
+  "address": "Serrano 1454, Palermo, Buenos Aires",
+  "lat": -34.58953,
+  "lng": -58.43166,
+  "hours": "Nueva apertura en Palermo",
+  "hours_json": "",
+  "notes": "Hamburguesería nacida en Bariloche (2018, Tomás Weiss); nueva sucursal en Palermo. Más de 10 burgers en la carta.",
+  "image": "",
+  "neighborhood": "Palermo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DeqJ0F1IlSG/"
  }
 ]
