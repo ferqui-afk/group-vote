@@ -1641,12 +1641,13 @@
   "lng": -58.4518623,
   "hours": "todos los días 8:00 AM–8:00 PM",
   "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"5\": [[480, 1200]], \"1\": [[480, 1200]], \"6\": [[480, 1200]], \"0\": [[480, 1200]], \"4\": [[480, 1200]], \"2\": [[480, 1200]], \"3\": [[480, 1200]]}}",
-  "notes": "Café de especialidad en Paseo Via Viva.",
+  "notes": "Café de especialidad en Paseo Via Viva, Barrio Chino. Viral por su café servido en un vasito de galletita bañada en chocolate (clásico y edición limitada marroc); café clásico desde $4500 y café en galletita $9000 (precios de agosto 2026, según el reel). También cookies, tostadito y rolls; parada obligada paseando por el Barrio Chino.",
   "image": "/images/argentina-20261003-gobs-cafe-de-especialidad.webp",
   "neighborhood": "Belgrano",
   "region": "argentina",
   "city": "",
-  "reel_url": ""
+  "reel_url": "https://www.instagram.com/reel/De2fdqgTWNG/",
+  "phone": "+5491136714951"
  },
  {
   "id": "argentina-20261007-gordis-burger",
@@ -18592,5 +18593,22 @@
   "region": "argentina",
   "city": "",
   "reel_url": "https://www.instagram.com/reel/De4WidIzLFQ/"
+ },
+ {
+  "id": "argentina-20261024-asu-maki-godoy-cruz",
+  "name": "Asu Maki",
+  "type": "Sushi Nikkei / Sushi libre",
+  "address": "Godoy Cruz 2335, Palermo, Buenos Aires",
+  "lat": -34.5824743,
+  "lng": -58.4284257,
+  "hours": "dom, mar–sáb 12:00 PM–11:30 PM; lun cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[720, 1410]], \"1\": [], \"2\": [[720, 1410]], \"3\": [[720, 1410]], \"4\": [[720, 1410]], \"5\": [[720, 1410]], \"6\": [[720, 1410]]}}",
+  "notes": "Sushi libre Nikkei a metros de Distrito Arcos, Palermo. $30.000 en efectivo por el recorrido de piezas preparadas al momento; sumando $10.000, ceviche fresco y ramen sin límite por una hora y media. Requiere reserva previa; las piezas no consumidas se cobran de forma individual. Ambiente de luces tenues, buena para compartir.",
+  "image": "",
+  "neighborhood": "Palermo, Buenos Aires",
+  "region": "argentina",
+  "city": "",
+  "reel_url": "https://www.instagram.com/reel/De42DcQStPW/",
+  "phone": "+541124943742"
  }
 ]
