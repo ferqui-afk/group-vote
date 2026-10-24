@@ -18576,5 +18576,21 @@
   "city": "Orlando",
   "reel_url": "https://www.instagram.com/reel/Dc6b1Q8SUcv/",
   "phone": "+14073826001"
+ },
+ {
+  "id": "argentina-20261024-kopi-cafe-guemes",
+  "name": "Kopi Café",
+  "type": "Café de especialidad / All Day Café",
+  "address": "Güemes 4802, Palermo, Buenos Aires",
+  "lat": -34.58034238,
+  "lng": -58.42540917,
+  "hours": "dom y sáb 8:30 AM–8:30 PM, lun–vie 7:30 AM–8:30 PM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[510, 1230]], \"1\": [[450, 1230]], \"2\": [[450, 1230]], \"3\": [[450, 1230]], \"4\": [[450, 1230]], \"5\": [[450, 1230]], \"6\": [[510, 1230]]}}",
+  "notes": "All day café renovado en la esquina de Güemes y Oro, Palermo: carta especial de verano, almuerzo sin horario y sección fit completa con dulces, bebidas y opciones con proteína. Imperdibles del reel: chipá de trufa (edición limitada), sándwich de trucha ahumada, pomelada de colágeno y limonada con antioxidantes. Esquina con onda, buena para home office; pet friendly.",
+  "image": "",
+  "neighborhood": "Palermo, Buenos Aires",
+  "region": "argentina",
+  "city": "",
+  "reel_url": "https://www.instagram.com/reel/De4WidIzLFQ/"
  }
 ]
