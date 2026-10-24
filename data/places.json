@@ -18542,5 +18542,39 @@
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DdXZgD_x7vz/",
   "phone": "+541143211730"
+ },
+ {
+  "id": "pr-20261024-bocao-sal",
+  "name": "Bocao' & Sal",
+  "type": "Restaurante",
+  "address": "Ave. Los Conquistadores 150, Bahía Marina Plaza Local 10-A, Cataño, PR 00962",
+  "lat": 18.45126967,
+  "lng": -66.14246782,
+  "hours": "dom 11:00 AM–10:00 PM; lun cerrado; mar–mié 11:00 AM–6:00 PM; jue 11:00 AM–10:00 PM; vie–sáb 11:00 AM–11:00 PM",
+  "hours_json": "{\"tz\": \"America/Puerto_Rico\", \"periods\": {\"0\": [[660, 1320]], \"2\": [[660, 1080]], \"3\": [[660, 1080]], \"4\": [[660, 1320]], \"5\": [[660, 1380]], \"6\": [[660, 1380]]}}",
+  "notes": "Comida boricua, tragos y ambiente junto a la marina; espacio, menú, barra y cocteles renovados para una nueva etapa. Próximos platos anunciados: ceviche de pork belly, risotto Bocao' con chuletas de cordero y crème brûlée de chocolate y café. Especialidades: mofongo, carne frita, mojito.",
+  "image": "",
+  "neighborhood": "Cataño",
+  "region": "pr",
+  "city": "Cataño",
+  "reel_url": "https://www.instagram.com/reel/DeuwcC_JRQU/",
+  "phone": "+19393727456"
+ },
+ {
+  "id": "orlando-20261024-c3-bistro",
+  "name": "C3 Bistró (Choo-Choo Churros)",
+  "type": "Restaurante argentino",
+  "address": "5810 Lake Underhill Rd, Orlando, FL 32807",
+  "lat": 28.538866477582,
+  "lng": -81.308178304112,
+  "hours": "jue y dom 6:00–9:30 PM; vie–sáb 6:00–10:00 PM; lun–mié cerrado",
+  "hours_json": "{\"tz\": \"America/New_York\", \"periods\": {\"0\": [[1080, 1290]], \"4\": [[1080, 1290]], \"5\": [[1080, 1320]], \"6\": [[1080, 1320]]}}",
+  "notes": "Primer steakhouse argentino de Orlando desde 1992; la familia de Choo Choo Churros, más de 30 años. Parrilla, milanesas, provoleta, entraña, bife de chorizo y churros. Solo cenas de jueves a domingo. Rating 4.7 en Google.",
+  "image": "",
+  "neighborhood": "Downtown Orlando",
+  "region": "orlando",
+  "city": "Orlando",
+  "reel_url": "https://www.instagram.com/reel/Dc6b1Q8SUcv/",
+  "phone": "+14073826001"
  }
 ]
