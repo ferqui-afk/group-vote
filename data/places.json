@@ -1208,12 +1208,13 @@
   "lng": -58.48701959,
   "hours": "todos los días 12:00 AM–12:00 AM",
   "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[0, 1440]], \"1\": [[0, 1440]], \"2\": [[0, 1440]], \"3\": [[0, 1440]], \"4\": [[0, 1440]], \"5\": [[0, 1440]], \"6\": [[0, 1440]]}}",
-  "notes": "Parrilla al carbón abierta las 24 horas, con servicio nocturno.",
+  "notes": "Parrilla al carbón abierta las 24 horas, con servicio nocturno. Parrilla libre $29.999 pagando en efectivo (reel de @recorrida_gastronomica): incluye empanada, chori, morcilla, chinchulín, riñón, vacío, asado, matambre, pechito y pollo, con ensaladas y papas fritas todo libre; bebida aparte. También tiene carta con platos de bodegón. Si se va temprano, conviene reservar.",
   "image": "",
   "neighborhood": "Villa del Parque, Buenos Aires",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/p/DY5YJvIPfC2/"
+  "reel_url": "https://www.instagram.com/p/DY5YJvIPfC2/ | https://www.instagram.com/reel/DeUl1ipBoMQ/",
+  "phone": "+541145024474"
  },
  {
   "id": "u19",
