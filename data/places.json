@@ -18610,5 +18610,21 @@
   "city": "",
   "reel_url": "https://www.instagram.com/reel/De42DcQStPW/",
   "phone": "+541124943742"
+ },
+ {
+  "id": "hayashi-taro",
+  "name": "Hayashi Taro",
+  "type": "Restaurante japonés / sushi omakase",
+  "address": "714 N Mills Ave, Orlando, FL 32803",
+  "lat": 28.55371432,
+  "lng": -81.36467434,
+  "hours": "Sin horario publicado (apertura 29 oct 2026)",
+  "hours_json": "",
+  "notes": "Orizume house: bentos omakase en cajas tradicionales ori-bako, pescado del mercado Toyosu de Tokio y ceremonias de matcha. De Chef Lewis Lin (JUJU, SUSURU) con Chef David Tsan. Bentos $25–$75.",
+  "image": "",
+  "neighborhood": "Mills 50",
+  "region": "orlando",
+  "city": "Orlando",
+  "reel_url": "https://www.instagram.com/reel/De4wDBtsZ-d/"
  }
 ]
