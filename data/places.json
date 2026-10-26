@@ -3466,12 +3466,12 @@
   "lng": -58.426133,
   "hours": "dom–mié 6:00 PM–2:00 AM; jue–sáb 6:00 PM–3:00 AM",
   "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[1080, 1560]], \"1\": [[1080, 1560]], \"2\": [[1080, 1560]], \"3\": [[1080, 1560]], \"4\": [[1080, 1620]], \"5\": [[1080, 1620]], \"6\": [[1080, 1620]]}}",
-  "notes": "Incluido en la lista de 7 bares para visitar en BA; la mayoría temáticos entre Palermo y Recoleta · Ubicación verificada el 30 sep 2026. Nuevo post de @forbesargentina: https://www.instagram.com/p/DeP2m1LEZ7c/ · Reconocido entre los mejores bares del planeta en The World's 50 Best Bars 2026; ambos en Palermo y del mismo grupo gastronómico.",
+  "notes": "Incluido en la lista de 7 bares para visitar en BA; la mayoría temáticos entre Palermo y Recoleta · Ubicación verificada el 30 sep 2026. Nuevo post de @forbesargentina: https://www.instagram.com/p/DeP2m1LEZ7c/ · Reconocido entre los mejores bares del planeta en The World's 50 Best Bars 2026; ambos en Palermo y del mismo grupo gastronómico. · Nuevo reel (oct 2026): uno de los 10 mejores bares del mundo, sin intentar impresionar; personalidad sobre perfección.",
   "image": "",
   "neighborhood": "Palermo / Recoleta",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/reel/Cu2zsI4u2Q6/"
+  "reel_url": "https://www.instagram.com/reel/Cu2zsI4u2Q6/ | https://www.instagram.com/reel/De6-FVZRk4C/"
  },
  {
   "id": "argentina-20261006-turf-parrilla",
@@ -17658,12 +17658,12 @@
   "lng": -58.39388924,
   "hours": "todos los días 9:00 AM–12:00 AM",
   "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[540, 1440]], \"1\": [[540, 1440]], \"2\": [[540, 1440]], \"3\": [[540, 1440]], \"4\": [[540, 1440]], \"5\": [[540, 1440]], \"6\": [[540, 1440]]}}",
-  "notes": "Cocina del este del Mediterráneo (Israel, Grecia, Marruecos, Libia); famoso por su sándwich de pastrami, hummus con setas y fainá con burrata; opciones vegetarianas y sin gluten; terraza exterior",
+  "notes": "Cocina del este del Mediterráneo (Israel, Grecia, Marruecos, Libia); famoso por su sándwich de pastrami, hummus con setas y fainá con burrata; opciones vegetarianas y sin gluten; terraza exterior · Nuevo reel (oct 2026): sándwich estrella de pastrami con brisket en pan de masa madre con kummel; cocina abierta, ambiente cálido, de desayuno a cena.",
   "image": "",
   "neighborhood": "Recoleta",
   "region": "argentina",
   "city": "Buenos Aires",
-  "reel_url": "https://www.instagram.com/reel/DepzjS2paPX/"
+  "reel_url": "https://www.instagram.com/reel/DepzjS2paPX/ | https://www.instagram.com/reel/De71EANJPkA/"
  },
  {
   "id": "arasibo-steakhouse-boutique",
@@ -18626,5 +18626,38 @@
   "region": "orlando",
   "city": "Orlando",
   "reel_url": "https://www.instagram.com/reel/De4wDBtsZ-d/"
+ },
+ {
+  "id": "argentina-20261025-aci2-bar",
+  "name": "Aci2 Bar",
+  "type": "Bar & Grill / hamburguesas",
+  "address": "Cucha Cucha 2595, Buenos Aires",
+  "lat": -34.60005678,
+  "lng": -58.46487126,
+  "hours": "Dom 6:00 PM–12:00 AM; lun 8:00 PM–12:00 AM; jue 8:00 PM–1:00 AM; vie–sáb 8:00 PM–2:00 AM; cerrado mar–mié",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[1080, 1440]], \"1\": [[1200, 1440]], \"4\": [[1200, 1500]], \"5\": [[1200, 1560]], \"6\": [[1200, 1560]]}}",
+  "notes": "Bar en La Paternal cuya identidad completa es la hamburguesa; tercer lugar de Dali Vázquez y Nicolás, después de Ácido (Bib Gourmand Michelin) y Olla 7. La burger nació como pop-up que ayudó a que Ácido sobreviviera. Ensalada frita, papas con boquerones y pickles, picada, veggie burger fuera de menú, papas famosas con dos salsas a elegir y Bloody Mary destacado. Espera de ~40 min por mesa; ir temprano o con paciencia. Google no publica teléfono para este local.",
+  "image": "",
+  "neighborhood": "La Paternal",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/Dey7V7qR_z_/"
+ },
+ {
+  "id": "argentina-20261025-norimoto-vicente-lopez",
+  "name": "Norimōto (Vicente López)",
+  "type": "Handroll bar / sushi japonés",
+  "address": "Av. del Libertador 101, Vicente López",
+  "lat": -34.53269749,
+  "lng": -58.46683804,
+  "hours": "Dom y mar–sáb 12:00 PM–12:00 AM; lun 12:00 PM–6:00 PM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[720, 1440]], \"1\": [[720, 1080]], \"2\": [[720, 1440]], \"3\": [[720, 1440]], \"4\": [[720, 1440]], \"5\": [[720, 1440]], \"6\": [[720, 1440]]}}",
+  "notes": "Primer handroll bar de Buenos Aires; sucursal Vicente López (el reel anuncia la llegada a Vicente López). Chirashi entre los favoritos, con pesca fresca, arroz y palta. Sin reservas. El reel dice todos los días de 12 a 00, pero Google publica lunes hasta las 6 PM.",
+  "image": "",
+  "neighborhood": "Vicente López",
+  "region": "argentina",
+  "city": "Vicente López",
+  "reel_url": "https://www.instagram.com/reel/DePHBTvhKvN/",
+  "phone": "+541139434333"
  }
 ]
