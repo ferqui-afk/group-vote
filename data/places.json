@@ -17786,12 +17786,12 @@
   "lng": -58.43916,
   "hours": "mar–sáb 8 PM–11:30 PM",
   "hours_json": "",
-  "notes": "Bistró de Julián Galende (ex Mirazur); nombre del árbol que su papá plantó al nacer él.",
+  "notes": "Bistró de Julián Galende (ex Mirazur); nombre del árbol que su papá plantó al nacer él. Estrella Verde Michelin 2025 y 2026; gastronomía circular; menú mediodía $28.000/$32.000/$36.000 (2 o 3 pasos, opción copa de vino, según el reel).",
   "image": "",
   "neighborhood": "Villa Crespo",
   "region": "argentina",
   "city": "Buenos Aires",
-  "reel_url": "https://www.instagram.com/reel/DesNBcos4dy/"
+  "reel_url": "https://www.instagram.com/reel/DesNBcos4dy/ | https://www.instagram.com/reel/Dc1PXbNPqLP/"
  },
  {
   "id": "la-bocheria-belgrano",
@@ -18708,5 +18708,56 @@
   "region": "orlando",
   "city": "Kissimmee, FL",
   "reel_url": "https://www.instagram.com/reel/DdG_8a0JcDg/"
+ },
+ {
+  "id": "argentina-20261027-mn-santa-ines",
+  "name": "MN Santa Inés",
+  "type": "Restaurante",
+  "address": "Ávalos 360, La Paternal, Buenos Aires",
+  "lat": -34.59279364,
+  "lng": -58.4676752,
+  "hours": "dom y sáb 12:30 PM–3:30 PM; mar–vie 12:30 PM–3 PM; lun cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[750, 930]], \"1\": [], \"2\": [[750, 900]], \"3\": [[750, 900]], \"4\": [[750, 900]], \"5\": [[750, 900]], \"6\": [[750, 930]]}}",
+  "notes": "Bib Gourmand Michelin 2025 y 2026; carta ecléctica que rota, chef Jazmín Marturet; platos $12.000–$27.500 (según el reel).",
+  "image": "",
+  "neighborhood": "La Paternal",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/Dc1PXbNPqLP/",
+  "phone": "+5491158486888"
+ },
+ {
+  "id": "argentina-20261027-ultramarinos",
+  "name": "Ultramarinos",
+  "type": "Restaurante",
+  "address": "Arribeños 1980, Barrio Chino, Buenos Aires",
+  "lat": -34.55902098,
+  "lng": -58.44869906,
+  "hours": "lun–mié 7:30 PM–1 AM; jue–sáb 12 PM–1 AM; dom cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [], \"1\": [[1170, 1500]], \"2\": [[1170, 1500]], \"3\": [[1170, 1500]], \"4\": [[720, 1500]], \"5\": [[720, 1500]], \"6\": [[720, 1500]]}}",
+  "notes": "Recomendado por la Guía Michelin; cocina de pesca y ríos argentinos, chef Maximiliano Rossi; set menú mediodía jue–vie $40.000 (entrada de 3 snacks, principal, postre, agua y café, según el reel).",
+  "image": "",
+  "neighborhood": "Barrio Chino",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/Dc1PXbNPqLP/",
+  "phone": "+541133868642"
+ },
+ {
+  "id": "argentina-20261027-picaron",
+  "name": "Picarón",
+  "type": "Restaurante",
+  "address": "Av. Dorrego 866, Chacarita, Buenos Aires",
+  "lat": -34.59113344,
+  "lng": -58.44713902,
+  "hours": "lun–sáb 12:30 PM–3:30 PM y 8 PM–11:30 PM; dom cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [], \"1\": [[750, 930], [1200, 1410]], \"2\": [[750, 930], [1200, 1410]], \"3\": [[750, 930], [1200, 1410]], \"4\": [[750, 930], [1200, 1410]], \"5\": [[750, 930], [1200, 1410]], \"6\": [[750, 930], [1200, 1410]]}}",
+  "notes": "Recomendado por la Guía Michelin; platitos creativos de cocina argentina moderna, chef Maximiliano Rossi; menú mediodía lun–vie omnívoro $26.500 / vegetariano $25.500 con plato, postre y agua (según el reel).",
+  "image": "",
+  "neighborhood": "Chacarita",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/Dc1PXbNPqLP/",
+  "phone": "+541150462352"
  }
 ]
