@@ -18676,5 +18676,37 @@
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/De-cXaWSdEn/",
   "phone": "+541140945970"
+ },
+ {
+  "id": "republica-restaurante",
+  "name": "República Restaurante",
+  "type": "Restaurante",
+  "address": "Metro Office Park, Edif Valencia 1, Suite 103, Guaynabo, PR 00969",
+  "lat": 18.415079,
+  "lng": -66.106453,
+  "hours": "mar–vie 11:30 AM–10:00 PM; sáb 6:00 PM–10:00 PM",
+  "hours_json": "{\"tz\": \"America/Puerto_Rico\", \"periods\": {\"2\": [[690, 1320]], \"3\": [[690, 1320]], \"4\": [[690, 1320]], \"5\": [[690, 1320]], \"6\": [[1080, 1320]]}}",
+  "notes": "Cocina puertorriqueña elevada de temporada; el menú cambia según lo que llega (pesca local, cerdo y vegetales). Reservas por OpenTable o por teléfono.",
+  "image": "",
+  "neighborhood": "Metro Office Park, Guaynabo",
+  "region": "pr",
+  "city": "Guaynabo, Puerto Rico",
+  "reel_url": "https://www.instagram.com/reel/De-lpIrx45H/"
+ },
+ {
+  "id": "nosso-quintal-brazilian-bar-grill",
+  "name": "Nosso Quintal Brazilian Bar & Grill",
+  "type": "Restaurante brasileño / Bar & grill",
+  "address": "30 Broadway, Kissimmee, FL 34741",
+  "lat": 28.292293,
+  "lng": -81.406994,
+  "hours": "dom 11:00 AM–9:00 PM; mar–jue 4:00 PM–10:00 PM; vie 4:00 PM–11:00 PM; sáb 11:00 AM–11:00 PM; lun cerrado",
+  "hours_json": "{\"tz\": \"America/New_York\", \"periods\": {\"0\": [[660, 1260]], \"2\": [[960, 1320]], \"3\": [[960, 1320]], \"4\": [[960, 1320]], \"5\": [[960, 1380]], \"6\": [[660, 1380]]}}",
+  "notes": "Nuevo bar & grill brasileño en el centro de Kissimmee, en un histórico edificio que fue banco; brochettes gourmet, cócteles artesanales y música en vivo.",
+  "image": "",
+  "neighborhood": "Downtown Kissimmee",
+  "region": "orlando",
+  "city": "Kissimmee, FL",
+  "reel_url": "https://www.instagram.com/reel/DdG_8a0JcDg/"
  }
 ]
