@@ -18659,5 +18659,22 @@
   "city": "Vicente López",
   "reel_url": "https://www.instagram.com/reel/DePHBTvhKvN/",
   "phone": "+541139434333"
+ },
+ {
+  "id": "argentina-20261026-norimoto-palermo",
+  "name": "Norimōto (Palermo)",
+  "type": "Handroll bar / sushi japonés",
+  "address": "Arenales 2896, Buenos Aires",
+  "lat": -34.59104912,
+  "lng": -58.40613385,
+  "hours": "Todos los días 12:00 PM–12:00 AM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[720, 1440]], \"1\": [[720, 1440]], \"2\": [[720, 1440]], \"3\": [[720, 1440]], \"4\": [[720, 1440]], \"5\": [[720, 1440]], \"6\": [[720, 1440]]}}",
+  "notes": "Primer handroll bar de Buenos Aires; sucursal Palermo (distinta de la de Vicente López). Nigiri de salmón, handrolls, chirashi, sashimi y temaki; barra de madera curva, ideal para vino con amigos. Beneficio Galicia Eminent: 25% off pagando contactless con Visa Signature Eminent (según el reel).",
+  "image": "",
+  "neighborhood": "Palermo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/De-cXaWSdEn/",
+  "phone": "+541140945970"
  }
 ]
