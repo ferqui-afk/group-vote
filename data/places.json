@@ -18875,5 +18875,22 @@
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DfCwyRDxy2O/",
   "phone": "+541151503861"
+ },
+ {
+  "id": "pr-20261029-taqueria-vatos-locos",
+  "name": "Taquería Vatos Locos",
+  "type": "Taquería / Bar",
+  "address": "C. Sol, Rincón, PR 00677, Puerto Rico",
+  "lat": 18.34002027,
+  "lng": -67.24999795,
+  "hours": "todos los días 1:00 PM–11:00 PM",
+  "hours_json": "{\"tz\": \"America/Puerto_Rico\", \"periods\": {\"0\": [[780, 1380]], \"1\": [[780, 1380]], \"2\": [[780, 1380]], \"3\": [[780, 1380]], \"4\": [[780, 1380]], \"5\": [[780, 1380]], \"6\": [[780, 1380]]}}",
+  "notes": "Tacos auténticos mexicanos con tortillas caseras, margaritas y birria; barra de tequila, mezcal y margaritas remodelada; lugar económico y animado en el corazón de Rincón.",
+  "image": "",
+  "neighborhood": "Rincón",
+  "region": "pr",
+  "city": "Rincón, Puerto Rico",
+  "reel_url": "https://www.instagram.com/reel/DfDq62SxsM6/",
+  "phone": "+19393192722"
  }
 ]
