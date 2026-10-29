@@ -18842,5 +18842,21 @@
     "city": "Orlando, FL",
     "reel_url": "https://www.instagram.com/reel/DfA83DKp5Zi/",
     "phone": "+14073872000"
+  },
+  {
+    "id": "argentina-20261028-vedra-cafe",
+    "name": "Vedra Café",
+    "type": "Cafetería / pastelería, café de especialidad",
+    "address": "Vidal 2360, Belgrano R, Buenos Aires, Argentina",
+    "lat": -34.56179384,
+    "lng": -58.46259907,
+    "hours": "todos los días 8:00 AM–8:00 PM",
+    "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[480, 1200]], \"1\": [[480, 1200]], \"2\": [[480, 1200]], \"3\": [[480, 1200]], \"4\": [[480, 1200]], \"5\": [[480, 1200]], \"6\": [[480, 1200]]}}",
+    "notes": "Pastelería y café de especialidad en Belgrano; carta de primavera con bebidas frías y cold foam. A unos 5,08 km del Airbnb de Palermo (la sucursal más cercana; otra sucursal: Vuelta de Obligado 2613, Belgrano C).",
+    "image": "",
+    "neighborhood": "Belgrano",
+    "region": "argentina",
+    "city": "Buenos Aires",
+    "reel_url": "https://www.instagram.com/reel/DfDQAY0MW9q/"
   }
 ]
