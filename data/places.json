@@ -2330,12 +2330,12 @@
   "lng": -58.42522,
   "hours": "mar–sáb 7:00 PM–12:00 AM",
   "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"2\": [[1140, 1440]], \"3\": [[1140, 1440]], \"4\": [[1140, 1440]], \"5\": [[1140, 1440]], \"6\": [[1140, 1440]]}}",
-  "notes": "Bar de pescados y mariscos frescos; ceviche, mejillones, trucha patagónica; +40 vinos.",
+  "notes": "Bar de pescados y mariscos frescos; ceviche, mejillones, trucha patagónica; +40 vinos. Menú del reel: tartar pesca blanca $17.000, croqueta de gambas $19.000, carpaccio de pesca blanca $19.000, gazpacho y langostinos $27.000, ñoquis coreanos $31.000, pesca del día $37.000, chirashi andaluz $35.000.",
   "image": "/images/argentina-20261007-margen.webp",
   "neighborhood": "Palermo, CABA",
   "region": "argentina",
   "city": "CABA",
-  "reel_url": "https://www.instagram.com/reel/DeF0xnUs88z/"
+  "reel_url": "https://www.instagram.com/reel/DeF0xnUs88z/ | https://www.instagram.com/reel/DeIQeTXuC2x/"
  },
  {
   "id": "argentina-20261003-meat-grill",
@@ -18608,7 +18608,7 @@
   "neighborhood": "Palermo, Buenos Aires",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/reel/De42DcQStPW/",
+  "reel_url": "https://www.instagram.com/reel/De42DcQStPW/ | https://www.instagram.com/reel/DexUvoOBKR7/",
   "phone": "+541124943742"
  },
  {
