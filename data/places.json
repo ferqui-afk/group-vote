@@ -18956,5 +18956,53 @@
   "region": "orlando",
   "city": "Orlando",
   "reel_url": "https://www.instagram.com/reel/DYf7dm0R0qW/"
+ },
+ {
+  "id": "the-lift-1967",
+  "name": "The Lift / 1967",
+  "type": "Restaurante sushi / cena show",
+  "address": "Godoy Cruz 1967, Palermo, Buenos Aires, C1414",
+  "lat": -34.58577244,
+  "lng": -58.43137324,
+  "hours": "mié–sáb 8:00 PM–12:00 AM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"3\": [[1200, 1440]], \"4\": [[1200, 1440]], \"5\": [[1200, 1440]], \"6\": [[1200, 1440]]}}",
+  "notes": "Sushi patagónico, coctelería de autor, cenas show y hidden club estilo speakeasy; música en vivo y arte.",
+  "image": "",
+  "neighborhood": "Palermo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DfQtURJRgxj/"
+ },
+ {
+  "id": "patio-olivas",
+  "name": "Patio Olivas",
+  "type": "Bar",
+  "address": "603 Av. Julio Andino, San Juan, 00924, Puerto Rico",
+  "lat": 18.4047683,
+  "lng": -66.0274871,
+  "hours": "jue 5:00 PM–10:00 PM; vie–sáb 5:00 PM–12:00 AM; dom 3:00 PM–9:00 PM; lun–mié cerrado",
+  "hours_json": "{\"tz\": \"America/Puerto_Rico\", \"periods\": {\"0\": [[900, 1260]], \"4\": [[1020, 1320]], \"5\": [[1020, 1440]], \"6\": [[1020, 1440]]}}",
+  "notes": "Bar al aire libre en San Juan; cervezas, tapas y cócteles; happy hour de margaritas a $5 de 5:00 PM a 8:00 PM; 5.0 estrellas en Google Maps.",
+  "image": "",
+  "neighborhood": "San Juan",
+  "region": "pr",
+  "city": "San Juan",
+  "reel_url": "https://www.instagram.com/reel/Dd9NrAlIa8x/"
+ },
+ {
+  "id": "le-petit-chef",
+  "name": "Le Petit Chef",
+  "type": "Cena show inmersiva",
+  "address": "JW Marriott Orlando Bonnet Creek, UnReserved Food Bazaar, 14900 Chelonia Pkwy, Orlando, FL 32821",
+  "lat": 28.35854,
+  "lng": -81.527063,
+  "hours": "jue–sáb, cena show (desde el 20 de noviembre de 2026)",
+  "hours_json": "",
+  "notes": "Cena show con proyección 3D del chef más pequeño del mundo sobre la mesa; menú de varios tiempos con ingredientes de Florida; experiencia dentro del JW Marriott Bonnet Creek, distinta de UnReserved.",
+  "image": "",
+  "neighborhood": "Orlando",
+  "region": "orlando",
+  "city": "Orlando",
+  "reel_url": "https://www.instagram.com/p/De_rHLCMkS_/"
  }
 ]
