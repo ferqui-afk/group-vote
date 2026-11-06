@@ -429,7 +429,7 @@
   "neighborhood": "San Telmo, Buenos Aires",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/p/DdpH2DslIgG/"
+  "reel_url": "https://www.instagram.com/p/DdpH2DslIgG/ | https://www.instagram.com/p/DepEQrpj8dZ/"
  },
  {
   "id": "argentina-20261005-bar-el-federal",
@@ -765,7 +765,7 @@
   "neighborhood": "Monserrat, Buenos Aires",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/p/DdpH2DslIgG/"
+  "reel_url": "https://www.instagram.com/p/DdpH2DslIgG/ | https://www.instagram.com/p/DepEQrpj8dZ/"
  },
  {
   "id": "u28",
@@ -1053,7 +1053,7 @@
   "neighborhood": "Microcentro, Buenos Aires",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/p/DdpH2DslIgG/"
+  "reel_url": "https://www.instagram.com/p/DdpH2DslIgG/ | https://www.instagram.com/p/DepEQrpj8dZ/"
  },
  {
   "id": "p29",
@@ -19285,5 +19285,22 @@
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DcMjd0AuiqZ/",
   "phone": "+541130164804"
+ },
+ {
+  "id": "argentina-20261106-cafe-registrado",
+  "name": "Café Registrado",
+  "type": "Café de especialidad",
+  "address": "Tte. Gral. Juan Domingo Perón 4211, Almagro",
+  "lat": -34.60581774,
+  "lng": -58.42625814,
+  "hours": "Lun–vie 8:00 AM–8:00 PM; sáb 8:00 AM–6:00 PM; dom cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [], \"1\": [[480, 1200]], \"2\": [[480, 1200]], \"3\": [[480, 1200]], \"4\": [[480, 1200]], \"5\": [[480, 1200]], \"6\": [[480, 1080]]}}",
+  "notes": "Café de especialidad con tostado propio; filtrados de origen único que rotan por cosecha. A 1,50 km en línea recta del Airbnb de Palermo.",
+  "image": "/images/argentina-20261106-cafe-registrado.webp",
+  "neighborhood": "Almagro",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/p/DepEQrpj8dZ/",
+  "phone": "+5491121762078"
  }
 ]
