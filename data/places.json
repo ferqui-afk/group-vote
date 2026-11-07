@@ -19446,5 +19446,22 @@
   "region": "orlando",
   "city": "Orlando",
   "reel_url": "https://www.instagram.com/reel/DfYzUfXxj8I/"
+ },
+ {
+  "id": "mirador-galeria-guemes",
+  "name": "Mirador de la Galería Güemes",
+  "type": "Mirador / Atracción turística",
+  "address": "Florida 165 (entrada también por San Martín 170), Microcentro, Buenos Aires",
+  "lat": -34.606126,
+  "lng": -58.374936,
+  "hours": "Mirador: lun–vie visitas guiadas 11:00 AM, 12:00 PM, 2:00 PM y 3:30 PM; cerrado sáb, dom, feriados y días de lluvia. Galería: lun–vie 8 AM–8 PM, sáb 9 AM–3 PM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [], \"1\": [[480, 1200]], \"2\": [[480, 1200]], \"3\": [[480, 1200]], \"4\": [[480, 1200]], \"5\": [[480, 1200]], \"6\": [[540, 900]]}}",
+  "notes": "Vista panorámica 360° desde el piso 14, a ~90 m de altura; fue el punto más alto de Argentina. Uno de los primeros rascacielos de Buenos Aires. Antoine de Saint-Exupéry vivió en el departamento 605 (1929–1931) y escribió \"Vol de Nuit\" allí. Se llega por el ascensor de la Torre Mitre al piso 14 y luego una escalera caracol angosta de 2 pisos. Entrada $10.000 según el reel (sept 2026); otras fuentes reportan menos — llevar efectivo. En el piso 4 funciona el bar Florida 165. Fuente: reel de Facebook de Alex Rivas (2026-09-15): https://www.facebook.com/reel/2015767572477204/",
+  "image": "",
+  "neighborhood": "Microcentro",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "",
+  "phone": "+541143315731"
  }
 ]
