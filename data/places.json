@@ -637,7 +637,7 @@
   "neighborhood": "Palermo / Recoleta",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/reel/Cu2zsI4u2Q6/"
+  "reel_url": "https://www.instagram.com/reel/Cu2zsI4u2Q6/ | https://www.instagram.com/reel/DPufyOnERjO"
  },
  {
   "id": "argentina-20261005-bravo-sinfonia-sensorial",
@@ -888,12 +888,12 @@
   "lng": -58.433138,
   "hours": "todos los días 12:00 PM–11:30 PM",
   "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[720, 1410]], \"1\": [[720, 1410]], \"2\": [[720, 1410]], \"3\": [[720, 1410]], \"4\": [[720, 1410]], \"5\": [[720, 1410]], \"6\": [[720, 1410]]}}",
-  "notes": "Pescados y mariscos · Guardado de @casa.zarautz",
+  "notes": "Pescados y mariscos · Guardado de @casa.zarautz · Parrilla en casa histórica; La Terraza todos los días 12:00 PM–12:00 AM.",
   "image": "/images/argentina-20261003-casa-zarautz.webp",
   "neighborhood": "Palermo",
   "region": "argentina",
   "city": "Buenos Aires",
-  "reel_url": "https://www.instagram.com/reel/DcerYptJxon/"
+  "reel_url": "https://www.instagram.com/reel/DcerYptJxon/ | https://www.instagram.com/reel/DaaprSuRJjj"
  },
  {
   "id": "argentina-20261003-casamanza",
@@ -1727,7 +1727,7 @@
   "neighborhood": "Palermo",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/p/DWNFJZhlrLb/"
+  "reel_url": "https://www.instagram.com/p/DWNFJZhlrLb/ | https://www.instagram.com/reel/DXXl-y6kQmA"
  },
  {
   "id": "u48",
@@ -1748,18 +1748,18 @@
  {
   "id": "u43",
   "name": "Humano",
-  "type": "No especificado",
+  "type": "Bar / Restaurante experiencial (vinilos, menú de pasos)",
   "address": "Bonpland 1712, CABA",
   "lat": -34.5831223,
   "lng": -58.4372772,
-  "hours": "dom 4:30 PM–7:00 PM, 8:00 PM–12:00 AM; mar–sáb 4:30 PM–7:00 PM, 8:00 PM–12:00 AM",
-  "hours_json": "{\"tz\": null, \"periods\": {\"0\": [[990, 1140], [1200, 1440]], \"2\": [[990, 1140], [1200, 1440]], \"3\": [[990, 1140], [1200, 1440]], \"4\": [[990, 1140], [1200, 1440]], \"5\": [[990, 1140], [1200, 1440]], \"6\": [[990, 1140], [1200, 1440]]}}",
-  "notes": "Nueva apertura en Palermo; el post no detalla rubro ni dirección · Ubicación verificada el 30 sep 2026.",
+  "hours": "mar–dom 4:30 PM–12:00 AM; café 4:30 PM–7:00 PM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[990, 1440]], \"2\": [[990, 1440]], \"3\": [[990, 1440]], \"4\": [[990, 1440]], \"5\": [[990, 1440]], \"6\": [[990, 1440]]}}",
+  "notes": "Experiencia con menú de pasos, música y preguntas: cada mesa descubre qué tipo de Humano sos. Precios ago 2026: café con leche $5.500, tragos clásicos $12.000, de autor $14.000, entradas desde $13.000, principales desde $14.000.",
   "image": "",
   "neighborhood": "Palermo, CABA",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/p/DcuUXf9lsIs/"
+  "reel_url": "https://www.instagram.com/p/DcuUXf9lsIs/ | https://www.instagram.com/reel/DcKIggGx7e7 | https://www.instagram.com/reel/DfasVkQTW3Z"
  },
  {
   "id": "argentina-20261003-il-giardino-terraza-romagnoli",
@@ -2095,7 +2095,7 @@
   "neighborhood": "Palermo Soho, CABA",
   "region": "argentina",
   "city": "CABA",
-  "reel_url": "https://www.instagram.com/reel/C893GRxsKTZ/"
+  "reel_url": "https://www.instagram.com/reel/C893GRxsKTZ/ | https://www.instagram.com/reel/DecQ8ABvfbL"
  },
  {
   "id": "argentina-20261003-laundry-soho",
@@ -2863,7 +2863,7 @@
   "neighborhood": "Palermo Hollywood",
   "region": "argentina",
   "city": "",
-  "reel_url": ""
+  "reel_url": "https://www.instagram.com/reel/DBudUH2utAb/"
  },
  {
   "id": "p45",
@@ -3471,7 +3471,7 @@
   "neighborhood": "Palermo / Recoleta",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/reel/Cu2zsI4u2Q6/ | https://www.instagram.com/reel/De6-FVZRk4C/"
+  "reel_url": "https://www.instagram.com/reel/Cu2zsI4u2Q6/ | https://www.instagram.com/reel/De6-FVZRk4C/ | https://www.instagram.com/reel/DecQ8ABvfbL"
  },
  {
   "id": "argentina-20261006-turf-parrilla",
@@ -3535,7 +3535,7 @@
   "neighborhood": "Palermo",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/reel/DbUHhbhJuoG/"
+  "reel_url": "https://www.instagram.com/reel/DbUHhbhJuoG/ | https://www.instagram.com/reel/DecQ8ABvfbL"
  },
  {
   "id": "argentina-20261001-victoria-brown",
@@ -19382,5 +19382,69 @@
   "reel_url": "https://www.instagram.com/p/DfCo30rlpru/",
   "region": "argentina",
   "type": "Café de especialidad"
+ },
+ {
+  "id": "argentina-20261009-dandy-palermo",
+  "name": "Dandy",
+  "type": "Restaurante clásico / Menú del mediodía",
+  "address": "Av. del Libertador 2410 (esq. Bulnes), Palermo Chico, CABA, C1425AAX",
+  "lat": -34.57983,
+  "lng": -58.4058,
+  "hours": "Lun–dom 9:00 AM–11:59 PM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[0, 60], [540, 1439]], \"1\": [[540, 1439]], \"2\": [[540, 1439]], \"3\": [[540, 1439]], \"4\": [[540, 1439]], \"5\": [[540, 1439]], \"6\": [[0, 60], [540, 1439]]}}",
+  "notes": "Un clásico; clave el menú del mediodía para cortar con la rutina. Sándwich de lomito clásico, pastrami macerado 9 días, boulangerie y pastelería. Rating 3.8 (783 reseñas).",
+  "image": "",
+  "neighborhood": "Palermo Chico",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DdugWI6xS_8/ | https://www.instagram.com/reel/CrZ4mWfAwD9/"
+ },
+ {
+  "id": "argentina-20261107-sans",
+  "name": "Sans",
+  "type": "Bar / Restaurante de tapeo",
+  "address": "Costa Rica 4602, CABA",
+  "lat": -34.588649,
+  "lng": -58.426421,
+  "hours": "Todos los días 8:00 AM–2:00 AM (vie–sáb hasta 3:00 AM, dom hasta 4:00 AM)",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[480, 1680]], \"1\": [[480, 1560]], \"2\": [[480, 1560]], \"3\": [[480, 1560]], \"4\": [[480, 1560]], \"5\": [[480, 1620]], \"6\": [[480, 1620]]}}",
+  "notes": "Bar de tapeo en una esquina de Palermo, onda cool y vintage; terraza. Medialunas, alfajores, picada, croquetas, empanadas. Rating 3.8 (364 reseñas).",
+  "image": "",
+  "neighborhood": "Palermo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DSviBADEUVM/"
+ },
+ {
+  "id": "argentina-20261107-cuphouse",
+  "name": "CupHouse",
+  "type": "Café de especialidad",
+  "address": "Av. Dr. Tristán Achával Rodríguez 1401, Reserva Ecológica Costanera Sur, Puerto Madero, CABA",
+  "lat": -34.61742,
+  "lng": -58.35664,
+  "hours": "Mar–dom 8:00 AM–7:00 PM (desde 1 nov); lunes cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[480, 1140]], \"2\": [[480, 1140]], \"3\": [[480, 1140]], \"4\": [[480, 1140]], \"5\": [[480, 1140]], \"6\": [[480, 1140]]}}",
+  "notes": "Cafetería de especialidad nueva (abrió 17 oct 2026) dentro de la Reserva Ecológica Costanera Sur. Café de origen trazable, matcha, opciones dulces y saladas. Pin aproximado a la entrada de la Reserva (sin ficha en Google Maps aún).",
+  "image": "",
+  "neighborhood": "Puerto Madero / Costanera Sur",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/Deo4AV7yud2/"
+ },
+ {
+  "id": "orlando-20261107-leiah",
+  "name": "Leiah",
+  "type": "Restaurante (mediterráneo / caribeño / americano)",
+  "address": "409 N Magnolia Ave, Orlando, FL 32801",
+  "lat": 28.547902,
+  "lng": -81.376245,
+  "hours": "Lun–sáb 12:00 PM–9:00 PM (vie–sáb hasta 10:00 PM); dom cerrado",
+  "hours_json": "{\"tz\": \"America/New_York\", \"periods\": {\"1\": [[720, 1260]], \"2\": [[720, 1260]], \"3\": [[720, 1260]], \"4\": [[720, 1260]], \"5\": [[720, 1320]], \"6\": [[720, 1320]]}}",
+  "notes": "Restaurante del chef Omar Torres en downtown Orlando, junto al Orange County Courthouse. Sándwich de pastrami de Wagyu (solo almuerzo), menú de degustación del chef por la noche. Wine Spectator Award of Excellence 2026.",
+  "image": "",
+  "neighborhood": "Downtown Orlando",
+  "region": "orlando",
+  "city": "Orlando",
+  "reel_url": "https://www.instagram.com/reel/DfYzUfXxj8I/"
  }
 ]
