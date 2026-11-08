@@ -19715,5 +19715,38 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": ""
+ },
+ {
+  "id": "dean-dennys-recoleta",
+  "name": "Dean & Dennys",
+  "type": "Hamburguesería",
+  "address": "Junín 1721, Recoleta, Buenos Aires",
+  "lat": -34.589035,
+  "lng": -58.39279,
+  "hours": "Dom–mié 12 PM–12 AM; jue–sáb 12 PM–1 AM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[720, 1440]], \"1\": [[720, 1440]], \"2\": [[720, 1440]], \"3\": [[720, 1440]], \"4\": [[720, 1500]], \"5\": [[720, 1500]], \"6\": [[720, 1500]]}}",
+  "notes": "Hamburguesería frente al cementerio de Recoleta; primera hamburguesería green de Argentina. Hamburguesas y shakes. El reel anuncia la Hong Kong Burger (con @walterlui) solo hasta el lunes 9/11 — promo terminada antes de la llegada. ~2,70 km del Airbnb.",
+  "image": "",
+  "neighborhood": "Recoleta",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DfZ6Om9RwcP/",
+  "phone": "+541148074065"
+ },
+ {
+  "id": "nerea-cafe-palermo",
+  "name": "Nerea Café",
+  "type": "Café",
+  "address": "Bonpland 1621, Palermo, Buenos Aires",
+  "lat": -34.583961,
+  "lng": -58.437932,
+  "hours": "Mar–sáb 8 AM–8 PM; dom 10 AM–8 PM; lun cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[600, 1200]], \"1\": [], \"2\": [[480, 1200]], \"3\": [[480, 1200]], \"4\": [[480, 1200]], \"5\": [[480, 1200]], \"6\": [[480, 1200]]}}",
+  "notes": "Café y pastelería propia, brunch, platos coloridos y buen café. Sucursal más cercana al Airbnb; el reel muestra la sucursal de Caballito (Avellaneda 95). ~1,77 km del Airbnb.",
+  "image": "",
+  "neighborhood": "Palermo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DfZr346yaTq/"
  }
 ]
