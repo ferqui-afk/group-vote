@@ -1786,12 +1786,12 @@
     "lng": -58.430867,
     "hours": "dom 11:00 AM–12:00 AM; mar–jue 11:00 AM–12:00 AM; vie–sáb 11:00 AM–1:00 AM",
     "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[660, 1440]], \"2\": [[660, 1440]], \"3\": [[660, 1440]], \"4\": [[660, 1440]], \"5\": [[660, 1500]], \"6\": [[660, 1500]]}}",
-    "notes": "Esquina linda de Palermo · Guardado de @islanegraresto",
+    "notes": "Esquina linda de Palermo · Guardado de @islanegraresto · Comida litoraleña ideal para citas, con terraza; dueños entrerrianos. Precios según el reel: rabas $32.000; dorado con espárragos $38.000; spaghetti de tinta de calamar con langostinos $39.000; sorrentinos de surubí $28.000; lomo con papas noisette $42.000. Favoritos de la creadora: spaghetti y dorado.",
     "image": "/images/argentina-20261003-isla-negra.webp",
     "neighborhood": "Palermo",
     "region": "argentina",
     "city": "Buenos Aires",
-    "reel_url": "https://www.instagram.com/reel/DTLutQTEXyT/"
+    "reel_url": "https://www.instagram.com/reel/DTLutQTEXyT/ | https://www.instagram.com/reel/Dfcj18-M3Dh/"
   },
   {
     "id": "u14",
@@ -19748,5 +19748,21 @@
     "region": "argentina",
     "city": "Buenos Aires",
     "reel_url": "https://www.instagram.com/reel/DfZr346yaTq/"
+  },
+  {
+    "id": "dios-gelato-palermo",
+    "name": "Dios Gelato",
+    "type": "heladería",
+    "address": "Av. Gral. Las Heras 3800",
+    "lat": -34.5819973,
+    "lng": -58.41262407,
+    "hours": "Todos los días 8:00 AM–12:00 AM",
+    "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[480, 1440]], \"1\": [[480, 1440]], \"2\": [[480, 1440]], \"3\": [[480, 1440]], \"4\": [[480, 1440]], \"5\": [[480, 1440]], \"6\": [[480, 1440]]}}",
+    "notes": "Heladería artesanal viral, la más viral del país según el reel; porciones muy generosas (dan de más del peso pedido) y degustaciones. Sabores: Dulce de Leche Dios, Chocolate Dios (marquise con merengue italiano), pistacho cheesecake, mascarpone con frutos rojos, tiramisú y lemon pie. Rating 4,8 estrellas según los reels (más de 7.800 reseñas en Google según un video); ~$30.000 el kilo según comentarios. También hay sucursal en Caballito (Riglos 303 esq. Formosa); esta es la de Palermo, la más cercana al Airbnb. A 1,47 km en línea recta del Airbnb de Palermo.",
+    "image": "",
+    "neighborhood": "Palermo",
+    "region": "argentina",
+    "city": "Buenos Aires",
+    "reel_url": "https://www.instagram.com/reel/Dfc0bFbAO4e/"
   }
 ]
