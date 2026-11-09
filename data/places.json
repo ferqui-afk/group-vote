@@ -21304,5 +21304,22 @@
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DbEszpjpW5p/",
   "phone": "+5491123910822"
+ },
+ {
+  "id": "argentina-20261109-querida-rosa-cafe",
+  "name": "Querida Rosa Café",
+  "type": "café",
+  "address": "Aráoz 568, Villa Crespo",
+  "lat": -34.59871341,
+  "lng": -58.43537235,
+  "hours": "dom, mié–sáb 12:00 PM–11:30 PM; lun–mar cerrado",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[720, 1410]], \"1\": [], \"2\": [], \"3\": [[720, 1410]], \"4\": [[720, 1410]], \"5\": [[720, 1410]], \"6\": [[720, 1410]]}}",
+  "notes": "Primera cafetería armenia mística de Argentina; café e infusiones preparados en una barra de arena caliente (la primera del país); lectura de borra de café (cafeomancia): sesiones con turno jue–dom 4–8 PM, lectura exprés mié–vie 4–11 PM y sáb–dom 2–11 PM ($15.000). Del reel: huevos rotos de Naty $10.000, sándwich Playero $17.000, chipá de basterma $7.000, picada vermutera $17.000, Shushan (yogur griego con frutas y miel) $10.000, brownie Dubai $8.000, La Vedette $14.000, baklava $2.000, cacao Querida Rosa $8.500. Rating 4.7/5 (1,085 reseñas) según Restaurant Guru. A 1,29 km en línea recta del Airbnb de Palermo.",
+  "image": "",
+  "neighborhood": "Villa Crespo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DfdIIEiiviq/",
+  "phone": "+541123142364"
  }
 ]
