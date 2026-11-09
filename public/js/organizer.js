@@ -309,7 +309,7 @@ async function confirmLinkPlace(){
 // ---- Elegir lugares por mapa (filtro por millas) ----
 const nearCache = new Map();
 let pickMap = null, pickCenter = null, pickPins = [], pickCircle = null, pickCenterDot = null;
-const BA_AIRBNB = { lat: -34.5928367, lng: -58.4218671 };
+const BA_AIRBNB = { lat: -34.58976, lng: -58.42648 };
 function pickIcon(sel, focus){
   return L.divIcon({ className: '', html: `<div class="pick-pin${sel ? ' sel' : ''}${focus ? ' focus' : ''}">${sel ? '✓' : ''}</div>`,
     iconSize: [22, 22], iconAnchor: [11, 11] });
