@@ -3184,7 +3184,8 @@
   "neighborhood": "Palermo, Buenos Aires",
   "region": "argentina",
   "city": "",
-  "reel_url": "https://www.instagram.com/p/Dc1jhuYS6B5/"
+  "reel_url": "https://www.instagram.com/p/Dc1jhuYS6B5/ | https://www.instagram.com/reel/DdH6nlbOqwq/",
+  "phone": "+541126268280"
  },
  {
   "id": "argentina-20261005-sobremesa-bar",
@@ -20977,7 +20978,7 @@
   "lng": -58.42444643,
   "hours": "dom 6:30 PM–1:00 AM; mar–jue 6:30 PM–1:00 AM; vie–sáb 6:30 PM–2:00 AM; cerrado lun",
   "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[1110, 1500]], \"1\": [], \"2\": [[1110, 1500]], \"3\": [[1110, 1500]], \"4\": [[1110, 1500]], \"5\": [[1110, 1560]], \"6\": [[1110, 1560]]}}",
-  "notes": "Bar de coctelería con cocina venezolana (@alambiquebar.arg): arepitas, tequeños, reina pepiada. Precios según el reel: picada $25.000, papas fritas $14.000, burrito tex-mex $16.000, fondue $27.000. A ~370 m del Airbnb (caminable).",
+  "notes": "Bar de coctelería con cocina venezolana (@alambiquebar.arg): luz baja, ambiente cómodo y música para quedarse horas. Tragos elegidos: Manga (ron blanco y oscuro, mango, coco tostado, limón), Tamo bien (Fernet Branca, tamarindo, mango, jengibre, pomelo), Mojito y Playa sin resaca sin alcohol (guayaba, coco, limón, menta). Picada Alambique $25.000 (chorizos a la pomarola, 4 tostones, 6 arepitas, 2 tequeños clásicos, 2 de choclo, carne mechada, porotos negros y reina pepiada); papas fritas americanas $14.000, burrito tex-mex $16.000, fondue de queso con pollo crujiente $27.000. A ~370 m del Airbnb (caminable).",
   "image": "/images/argentina-20261011-alambique-bar.webp",
   "neighborhood": "Palermo",
   "region": "argentina",
@@ -21185,5 +21186,55 @@
   "region": "argentina",
   "city": "Buenos Aires",
   "reel_url": ""
+ },
+ {
+  "id": "argentina-20261109-vaffanculo-cantina-italiana",
+  "name": "Vaffanculo Cantina Italiana",
+  "type": "Restaurante italiano / Cantina",
+  "address": "Báez 242, Las Cañitas, Buenos Aires",
+  "lat": -34.5725,
+  "lng": -58.4305,
+  "hours": "Dom 1:00 PM–5:00 PM, 8:00 PM–1:00 AM; Lun 8:00 PM–1:00 AM; Mar–Sáb 1:00 PM–5:00 PM, 8:00 PM–1:00 AM",
+  "hours_json": "{\"tz\":\"America/Argentina/Buenos_Aires\",\"periods\":{\"0\":[[780,1020],[1200,1500]],\"1\":[[1200,1500]],\"2\":[[780,1020],[1200,1500]],\"3\":[[780,1020],[1200,1500]],\"4\":[[780,1020],[1200,1500]],\"5\":[[780,1020],[1200,1500]],\"6\":[[780,1020],[1200,1500]]}}",
+  "notes": "Cantina italiana viral de Las Cañitas, ambientación de calle italiana (manteles a cuadros rojos y blancos, banderines, luces). El reel la recomienda por el tiramisú casero. Especialidad: pasta preparada en la mesa dentro de la horma de queso (fettuccine al parmesano), ñoquis en pan, más de 20 salsas, lasañas y volcán de maracuyá de postre. A 1,95 km del Airbnb.",
+  "image": "",
+  "neighborhood": "Las Cañitas",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DehzgF9u8k8/",
+  "phone": "+541158098656"
+ },
+ {
+  "id": "argentina-20261109-madero-tango",
+  "name": "Madero Tango",
+  "type": "Show de tango / Cena show",
+  "address": "Av. Alicia Moreau de Justo 2150, Puerto Madero, Buenos Aires",
+  "lat": -34.62374699,
+  "lng": -58.36401709,
+  "hours": "Todos los días 7:30 PM–12:00 AM",
+  "hours_json": "{\"tz\":\"America/Argentina/Buenos_Aires\",\"periods\":{\"0\":[[1170,1440]],\"1\":[[1170,1440]],\"2\":[[1170,1440]],\"3\":[[1170,1440]],\"4\":[[1170,1440]],\"5\":[[1170,1440]],\"6\":[[1170,1440]]}}",
+  "notes": "Show de tango con cena en Puerto Madero: música en vivo, danza y gastronomía, con vista al río y a los diques iluminados. Diferentes categorías de entradas, desde solo el espectáculo hasta cena completa. Cena 7:30 PM, show 9:00 PM (~1,5 h) según guías. Único show de tango de Puerto Madero. A 6,85 km del Airbnb.",
+  "image": "",
+  "neighborhood": "Puerto Madero",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DezUygwo4jF/",
+  "phone": "+541152393009"
+ },
+ {
+  "id": "argentina-20261109-snt-coffee",
+  "name": "SNT Coffee",
+  "type": "Café / Cerámica",
+  "address": "Jorge Luis Borges 1958, Palermo, Buenos Aires",
+  "lat": -34.58622446,
+  "lng": -58.42655197,
+  "hours": "Dom 10:00 AM–8:00 PM; Lun cerrado; Mar–Vie 2:00 PM–8:00 PM; Sáb 10:00 AM–8:00 PM",
+  "hours_json": "{\"tz\":\"America/Argentina/Buenos_Aires\",\"periods\":{\"0\":[[600,1200]],\"1\":[],\"2\":[[840,1200]],\"3\":[[840,1200]],\"4\":[[840,1200]],\"5\":[[840,1200]],\"6\":[[600,1200]]}}",
+  "notes": "Café + cerámica: elegís una pieza, la pintás y te la llevás tras esmaltado y horneado (retiro en ~10–14 días); piezas aptas vajilla, microondas y lavavajillas. Desayuno o merienda (opciones veganas y sin TACC). De noche: Platitos by SNT, vie y sáb. Con reserva previa. A 0,39 km del Airbnb.",
+  "image": "",
+  "neighborhood": "Palermo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DcMYMF9R5lG/"
  }
 ]
