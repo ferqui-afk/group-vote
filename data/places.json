@@ -21321,5 +21321,39 @@
   "city": "Buenos Aires",
   "reel_url": "https://www.instagram.com/reel/DfdIIEiiviq/",
   "phone": "+541123142364"
+ },
+ {
+  "id": "mercado-de-san-telmo",
+  "name": "Mercado de San Telmo",
+  "type": "Mercado gastronómico",
+  "address": "Bolívar 970, San Telmo, Buenos Aires",
+  "lat": -34.61931753,
+  "lng": -58.37226658,
+  "hours": "Dom–sáb 8:00 AM–8:00 PM; mié 8:00 AM–9:00 PM",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[480, 1200]], \"1\": [[480, 1200]], \"2\": [[480, 1200]], \"3\": [[480, 1260]], \"4\": [[480, 1200]], \"5\": [[480, 1200]], \"6\": [[480, 1200]]}}",
+  "notes": "Mercado techado histórico de 1897, Monumento Histórico Nacional desde 2000; puestos de comida, verduras y carnes, anticuarios y cafés. Rating 4,4 (408 reseñas).",
+  "image": "",
+  "neighborhood": "San Telmo",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DdP6lm5BIDr/",
+  "phone": "+541143007641"
+ },
+ {
+  "id": "reserva-ecologica-costanera-sur",
+  "name": "Reserva Ecológica Costanera Sur",
+  "type": "Reserva natural / Parque",
+  "address": "Av. Dr. Tristán Achával Rodríguez 1550, Puerto Madero, Buenos Aires",
+  "lat": -34.61742,
+  "lng": -58.35664,
+  "hours": "Mar–dom 8:00 AM–7:00 PM (verano); lunes cerrado, cierra con lluvia",
+  "hours_json": "{\"tz\": \"America/Argentina/Buenos_Aires\", \"periods\": {\"0\": [[480, 1140]], \"2\": [[480, 1140]], \"3\": [[480, 1140]], \"4\": [[480, 1140]], \"5\": [[480, 1140]], \"6\": [[480, 1140]]}}",
+  "notes": "Reserva natural de 350 hectáreas, la más grande de la ciudad, junto al Río de la Plata; senderos, lagunas y más de 300 especies de aves; entrada gratuita; visitas guiadas gratuitas mar y jue 10:00 AM y dom 9:30 AM; prohibido el ingreso con mascotas.",
+  "image": "",
+  "neighborhood": "Puerto Madero",
+  "region": "argentina",
+  "city": "Buenos Aires",
+  "reel_url": "https://www.instagram.com/reel/DdP6lm5BIDr/",
+  "phone": "+541143151320"
  }
 ]
